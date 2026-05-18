@@ -121,7 +121,7 @@ const Booking = (() => {
 
   const init = () => {
     renderServiceOptions();
-    renderTimeSlots();
+    renderTimeSlots(); // render empty slots as placeholder until date is chosen
     attachEvents();
     // Set min date for date picker to today
     const dateInput = $('#booking-date');
@@ -219,20 +219,36 @@ const Booking = (() => {
     totalEl.textContent = `${CURRENCY}${grand.toLocaleString()}`;
   };
 
-  const renderTimeSlots = () => {
+  // Fetch times already booked on a given date from Supabase
+  const fetchBookedSlots = async (date) => {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/bookings?select=time&date=eq.${date}&status=neq.done`,
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+        }
+      }
+    );
+    if (!res.ok) return []; // fail silently — don't block the user
+    const rows = await res.json();
+    return rows.map(r => r.time);
+  };
+
+  const renderTimeSlots = (bookedTimes = []) => {
     const grid = $('.time-grid');
     if (!grid) return;
 
-    // Randomly mark 2 slots as booked for demo
-    const bookedIndices = [2, 6];
-
-    grid.innerHTML = TIME_SLOTS.map((t, i) => `
-      <button class="time-btn ${bookedIndices.includes(i) ? 'booked' : ''}"
-              data-time="${t}"
-              ${bookedIndices.includes(i) ? 'disabled' : ''}>
-        ${t}
-      </button>
-    `).join('');
+    grid.innerHTML = TIME_SLOTS.map(t => {
+      const isBooked = bookedTimes.includes(t);
+      return `
+        <button class="time-btn ${isBooked ? 'booked' : ''}"
+                data-time="${t}"
+                ${isBooked ? 'disabled' : ''}>
+          ${t}
+        </button>
+      `;
+    }).join('');
 
     $$('.time-btn:not(.booked)').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -243,9 +259,29 @@ const Booking = (() => {
     });
   };
 
+  // Show loading spinner in the time grid while fetching
+  const showTimeSlotsLoading = () => {
+    const grid = $('.time-grid');
+    if (grid) grid.innerHTML = `<p class="time-loading">Checking availability…</p>`;
+  };
+
+  // Load slots for the currently selected date (called on step 2 entry and date change)
+  const loadTimeSlotsForDate = async (date) => {
+    if (!date) { renderTimeSlots([]); return; }
+    showTimeSlotsLoading();
+    const booked = await fetchBookedSlots(date);
+    renderTimeSlots(booked);
+    // Re-apply selected state if user came back to step 2
+    if (state.time) {
+      const activeBtn = $(`.time-btn[data-time="${state.time}"]`);
+      if (activeBtn && !activeBtn.disabled) activeBtn.classList.add('selected');
+      else state.time = null; // slot was taken since they last picked it
+    }
+  };
+
   const attachEvents = () => {
     // Step 1 → 2
-    $('#step1-next')?.addEventListener('click', () => {
+    $('#step1-next')?.addEventListener('click', async () => {
       if (!state.service) {
         showError('service-error', 'Please select a service to continue.');
         return;
@@ -257,6 +293,7 @@ const Booking = (() => {
       }
       state.date = date;
       goToStep(2);
+      await loadTimeSlotsForDate(state.date);
     });
 
     // Step 2 → 3
@@ -290,8 +327,8 @@ const Booking = (() => {
       });
     }
 
-    // Date change — update display text and state
-    $('#booking-date')?.addEventListener('change', e => {
+    // Date change — update display text, state, and reload real availability
+    $('#booking-date')?.addEventListener('change', async e => {
       state.date = e.target.value;
       state.time = null;
       $$('.time-btn').forEach(b => b.classList.remove('selected'));
@@ -303,6 +340,11 @@ const Booking = (() => {
         display.textContent = d.toLocaleDateString('en-US', { weekday:'short', month:'long', day:'numeric', year:'numeric' });
         display.style.color = 'var(--charcoal)';
         $('#date-picker-trigger')?.classList.add('has-value');
+      }
+
+      // If already on step 2, refresh the slots live
+      if (state.step === 2) {
+        await loadTimeSlotsForDate(state.date);
       }
     });
   };
