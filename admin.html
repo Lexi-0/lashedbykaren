@@ -182,6 +182,53 @@
 
     .logout-btn:hover { border-color: var(--deep-rose); color: var(--deep-rose); }
 
+    /* ── Bookings toggle ────────────────────────────────────── */
+    .bookings-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-family: var(--font-body);
+      background: none;
+      border: 1px solid rgba(250,247,242,0.12);
+      border-radius: var(--radius-pill);
+      padding: 0.45rem 1rem 0.45rem 0.75rem;
+      cursor: pointer;
+      color: var(--mid-gray);
+      transition: all 0.25s;
+    }
+
+    .bookings-toggle .toggle-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--mid-gray);
+      flex-shrink: 0;
+      transition: background 0.25s;
+    }
+
+    .bookings-toggle.open {
+      border-color: rgba(100, 200, 130, 0.4);
+      color: #7ecfa0;
+    }
+
+    .bookings-toggle.open .toggle-dot {
+      background: #7ecfa0;
+      box-shadow: 0 0 6px rgba(126,207,160,0.6);
+    }
+
+    .bookings-toggle.closed {
+      border-color: rgba(220, 100, 100, 0.4);
+      color: #e07070;
+    }
+
+    .bookings-toggle.closed .toggle-dot {
+      background: #e07070;
+      box-shadow: 0 0 6px rgba(224,112,112,0.5);
+    }
+
     .dashboard-inner {
       max-width: 1100px;
       margin: 0 auto;
@@ -646,6 +693,10 @@
   <div class="top-bar">
     <div class="top-bar-logo">Lash'd by <span>Karen</span></div>
     <div class="top-bar-right">
+      <button class="bookings-toggle" id="bookings-toggle">
+        <span class="toggle-dot"></span>
+        <span class="toggle-label">Bookings</span>
+      </button>
       <span class="top-bar-label">Admin</span>
       <button class="logout-btn" id="logout-btn">Log out</button>
     </div>
@@ -936,7 +987,56 @@
   window.updateStatus = updateStatus;
   window.deleteBooking = deleteBooking;
 
-  /* ── Auth ──────────────────────────────────── */
+  /* ── Bookings Open/Closed Toggle ──────────────────────────── */
+  const toggleBtn   = document.getElementById('bookings-toggle');
+  const toggleLabel = toggleBtn.querySelector('.toggle-label');
+
+  const getBookingsOpen = async () => {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/settings?select=value&key=eq.bookings_open&limit=1`,
+        { headers: sbHeaders() }
+      );
+      const rows = await res.json();
+      if (!rows.length) return true; // default open if row doesn't exist yet
+      return rows[0].value === 'true' || rows[0].value === true;
+    } catch { return true; }
+  };
+
+  const setBookingsOpen = async (open) => {
+    // Upsert — creates the row the first time, updates it after
+    await fetch(`${SUPABASE_URL}/rest/v1/settings`, {
+      method: 'POST',
+      headers: { ...sbHeaders(), 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: 'bookings_open', value: String(open) })
+    });
+  };
+
+  const applyToggleUI = (open) => {
+    toggleBtn.classList.toggle('open',   open);
+    toggleBtn.classList.toggle('closed', !open);
+    toggleLabel.textContent = open ? 'Bookings Open' : 'Bookings Closed';
+    toggleBtn.title = open
+      ? 'Click to stop taking new bookings'
+      : 'Click to allow new bookings';
+  };
+
+  // Load current state when dashboard is shown
+  const loadToggleState = async () => {
+    const open = await getBookingsOpen();
+    applyToggleUI(open);
+  };
+
+  toggleBtn.addEventListener('click', async () => {
+    const currentlyOpen = toggleBtn.classList.contains('open');
+    const newState = !currentlyOpen;
+    const label = newState ? 'open bookings' : 'close bookings';
+    if (!confirm(`Are you sure you want to ${label}?`)) return;
+    applyToggleUI(newState);          // optimistic UI
+    await setBookingsOpen(newState);  // persist to Supabase
+  });
+
+
   const loginScreen   = document.getElementById('login-screen');
   const dashboard     = document.getElementById('dashboard');
   const loginBtn      = document.getElementById('login-btn');
@@ -948,6 +1048,7 @@
     dashboard.style.display   = 'block';
     loginError.style.display  = 'none';
     loadDashboard();
+    loadToggleState();
   };
 
   const login = () => {
