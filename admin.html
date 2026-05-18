@@ -744,12 +744,31 @@
   const loginError  = document.getElementById('login-error');
   const passwordInput = document.getElementById('admin-password');
 
+  const SESSION_KEY = 'admin_session';
+  const SESSION_TTL = 5 * 60 * 1000; // 5 minutes
+
+  const showDashboard = () => {
+    loginScreen.style.display = 'none';
+    dashboard.style.display = 'block';
+    loginError.style.display = 'none';
+    loadDashboard();
+  };
+
+  // Check existing session on page load
+  const existingSession = sessionStorage.getItem(SESSION_KEY);
+  if (existingSession) {
+    const { timestamp } = JSON.parse(existingSession);
+    if (Date.now() - timestamp < SESSION_TTL) {
+      showDashboard();
+    } else {
+      sessionStorage.removeItem(SESSION_KEY);
+    }
+  }
+
   const login = () => {
     if (passwordInput.value === ADMIN_PASSWORD) {
-      loginScreen.style.display = 'none';
-      dashboard.style.display = 'block';
-      loginError.style.display = 'none';
-      loadDashboard();
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ timestamp: Date.now() }));
+      showDashboard();
     } else {
       loginError.style.display = 'block';
       passwordInput.value = '';
@@ -761,6 +780,7 @@
   passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 
   document.getElementById('logout-btn').addEventListener('click', () => {
+    sessionStorage.removeItem(SESSION_KEY);
     dashboard.style.display = 'none';
     loginScreen.style.display = 'flex';
     passwordInput.value = '';
@@ -831,7 +851,13 @@
       </td></tr>`;
     document.getElementById('empty-state').style.display = 'none';
 
-    const all = await getBookings();
+    let all = [];
+    try {
+      all = await getBookings();
+    } catch(e) {
+      console.error('loadDashboard error:', e);
+    }
+    console.log('Bookings fetched:', all.length, all);
     renderStats(all);
     renderTable(all);
   };
@@ -859,6 +885,10 @@
           || (b.hostel || '').toLowerCase().includes(q)
           || (b.service || '').toLowerCase().includes(q)
           || (b.id || '').toLowerCase().includes(q);
+      })
+      .sort((a, b) => {
+        if (a.date !== b.date) return (a.date || '') > (b.date || '') ? 1 : -1;
+        return (a.time || '') > (b.time || '') ? 1 : -1;
       });
 
     const tbody = document.getElementById('bookings-body');
