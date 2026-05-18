@@ -1,131 +1,131 @@
-# ✨ Lash Studio — Website & Booking System
+# Lash'd by Karen
 
-A premium lash studio website with a full booking flow and digital ticket system.
-
----
-
-## 📁 File Structure
-
-```
-lash-studio/
-├── index.html              ← Main website (all pages in one)
-├── css/
-│   └── styles.css          ← All styles + design system
-├── js/
-│   └── main.js             ← Frontend logic, booking flow, ticket
-├── backend/
-│   ├── api.js              ← Express + Supabase REST API
-│   └── schema.sql          ← Database schema + seed data
-└── package.json
-```
+Booking website for a lash studio. Clients can browse services, pick a date and time, and submit their details. Bookings are saved to Supabase and viewable in a password-protected admin dashboard.
 
 ---
 
-## 🚀 Frontend Setup
+## File Structure
 
-No build step needed. Just open `index.html` in a browser, or serve with:
+```
+lashedbykaren/
+├── index.html        # Main booking site
+├── styles.css        # All styles
+├── main.js           # Booking logic, Supabase integration
+├── admin.html        # Admin dashboard (password protected)
+├── README.md
+└── images/           # All site images
+    ├── classic.jpg
+    ├── hybrid.jpg
+    └── ...
+```
+
+---
+
+## Stack
+
+- Plain HTML, CSS, JavaScript — no frameworks, no build step
+- [Supabase](https://supabase.com) for the database
+- [Vercel](https://vercel.com) for hosting
+
+---
+
+## Setup
+
+### 1. Clone the repo
 
 ```bash
-npx serve .
+git clone https://github.com/yourusername/lashedbykaren.git
+cd lashedbykaren
 ```
 
----
+### 2. Supabase
 
-## 🗄️ Backend Setup
+The project uses Supabase as the backend database.
 
-### 1. Create a Supabase Project
-- Go to [supabase.com](https://supabase.com) and create a new project
-- Copy your **Project URL** and **Service Role Key** from Settings → API
+1. Go to [supabase.com](https://supabase.com) and create a project
+2. Create a table called `bookings` with these columns:
 
-### 2. Run the Database Schema
-- Go to Supabase → SQL Editor
-- Paste and run the contents of `backend/schema.sql`
-- This creates all tables, policies, indexes, and seeds 90 days of availability
+| Column | Type |
+|---|---|
+| `id` | text (primary key) |
+| `client_name` | text |
+| `phone` | text |
+| `hostel` | text |
+| `room` | text |
+| `service` | text |
+| `addons` | text |
+| `price` | int8 |
+| `date` | text |
+| `time` | text |
+| `notes` | text |
+| `status` | text (default: `pending`) |
+| `created_at` | timestamptz (default: `now()`) |
 
-### 3. Configure Environment
-Create a `.env` file in the project root:
+3. Enable RLS and add these 3 policies on the `bookings` table:
 
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=your-service-role-key
-PORT=3001
-FRONTEND_URL=http://localhost:3000
-
-# Optional: email confirmations
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=youremail@gmail.com
-SMTP_PASS=your-app-password
-FROM_EMAIL=studio@yourlashstudio.com
+**Allow reads**
+```sql
+create policy "Allow reads" on "public"."bookings"
+as PERMISSIVE for SELECT to public using (true);
 ```
 
-### 4. Install & Start
-```bash
-npm install
-npm start
-# or for development with auto-reload:
-npm run dev
+**Allow inserts**
+```sql
+create policy "Allow inserts" on "public"."bookings"
+as PERMISSIVE for INSERT to public with check (true);
 ```
 
----
+**Allow all**
+```sql
+create policy "Allow all" on "public"."bookings"
+as PERMISSIVE for ALL to public using (true);
+```
 
-## 🌐 API Endpoints
+4. Go to **Project Settings → API** and copy your Project URL and anon key into `main.js` and `admin.html`:
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/services` | List all services |
-| GET | `/api/availability?date=YYYY-MM-DD` | Available slots for a date |
-| POST | `/api/bookings` | Create a booking + send ticket |
-| GET | `/api/bookings/:id` | Get booking + QR code |
-| GET | `/api/verify?booking=LS-XXXXX` | Verify a booking (QR scan) |
-| PATCH | `/api/bookings/:id/status` | Update booking status (admin) |
-| GET | `/api/admin/bookings` | List all bookings (admin) |
-| POST | `/api/admin/availability/block` | Block dates/slots (admin) |
-| POST | `/api/admin/availability/unblock` | Unblock a slot (admin) |
+```js
+const SUPABASE_URL = 'https://your-project-ref.supabase.co';
+const SUPABASE_KEY = 'your-anon-key';
+```
 
----
+### 3. Deploy to Vercel
 
-## 🎟️ Ticket System
+1. Push the repo to GitHub
+2. Go to [vercel.com](https://vercel.com) → New Project → Import from GitHub
+3. Select the repo → Deploy (no configuration needed)
 
-When a booking is submitted:
-1. A unique booking number (`LS-XXXXXX`) is generated
-2. The booking is saved to Supabase
-3. The time slot is marked as booked in the availability table
-4. A QR code is generated linking to `/verify?booking=LS-XXXXX`
-5. A beautiful HTML email ticket is sent (if email provided)
-6. An animated digital ticket appears on screen
+Your site will be live at `yourproject.vercel.app`  
+Admin dashboard at `yourproject.vercel.app/admin.html`
 
 ---
 
-## 🎨 Design Tokens
+## Admin Dashboard
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--dusty-pink` | `#E8C5BF` | Accents, borders |
-| `--rose-blush` | `#D4A5A0` | Hover states |
-| `--deep-rose` | `#B07A75` | Primary actions |
-| `--ivory` | `#FAF7F2` | Page background |
-| `--charcoal` | `#2C2826` | Text, dark sections |
+Protected by a password. Default is  — change it at the top of `admin.html`:
 
-Fonts: **Cormorant Garamond** (display) + **Jost** (body)
+```js
+const ADMIN_PASSWORD = 'karen2025';
+```
 
----
-
-## 📱 Responsive
-
-The site adapts to all screen sizes:
-- Mobile: single-column, collapsible nav, large touch targets
-- Tablet: 2-column layouts, condensed hero
-- Desktop: full two-panel hero, masonry gallery
+Features:
+- See all bookings with client name, phone, hostel, room, service, date and time
+- Filter by status (Pending / Confirmed / Done)
+- Search by name, room or hostel
+- Mark bookings as confirmed or done
+- Delete individual bookings or clear all
 
 ---
 
-## 🔧 Customisation Checklist
+## Changing Services or Prices
 
-- [ ] Replace placeholder service images in `service-card-image` divs
-- [ ] Add real gallery photos to `.gallery-item` divs
-- [ ] Update studio name, address, hours, Instagram handle
-- [ ] Connect frontend booking form to the backend API
-- [ ] Add Google Maps embed in the contact section
-- [ ] Set up SMTP credentials for email tickets
-- [ ] Configure Supabase RLS for production security
+Services are defined in `main.js` near the top. Find the `SERVICES` array and edit names, descriptions, prices and durations there.
+
+---
+
+## Changing the Admin Password
+
+Open `admin.html` and change this line:
+
+```js
+const ADMIN_PASSWORD = 'karen2025';
+```
