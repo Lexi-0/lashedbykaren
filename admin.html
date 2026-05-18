@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Lash'd by Karen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dusty-pink:  #E8C5BF;
+      --rose-blush:  #D4A5A0;
+      --deep-rose:   #B07A75;
+      --ivory:       #FAF7F2;
+      --warm-white:  #F5F0EB;
+      --soft-gray:   #C8C2BC;
+      --mid-gray:    #8E8680;
+      --charcoal:    #2C2826;
+      --ink:         #1A1614;
+      --font-display:'Cormorant Garamond', Georgia, serif;
+      --font-body:   'Jost', sans-serif;
+      --radius-sm:   4px;
+      --radius-md:   12px;
+      --radius-lg:   24px;
+      --radius-pill: 999px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--ink);
+      color: var(--ivory);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Login Screen ───────────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(176,122,117,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(232,197,191,0.08) 0%, transparent 50%),
+        var(--ink);
+    }
+
+    .login-card {
+      background: rgba(250,247,242,0.04);
+      border: 1px solid rgba(250,247,242,0.08);
+      border-radius: var(--radius-lg);
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 380px;
+      backdrop-filter: blur(20px);
+    }
+
+    .login-logo {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 300;
+      margin-bottom: 0.25rem;
+      color: var(--ivory);
+    }
+
+    .login-logo span { color: var(--deep-rose); }
+
+    .login-subtitle {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+      margin-bottom: 2.5rem;
+    }
+
+    .login-label {
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+      margin-bottom: 0.5rem;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(250,247,242,0.06);
+      border: 1px solid rgba(250,247,242,0.12);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: var(--ivory);
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 1.25rem;
+    }
+
+    .login-input:focus { border-color: var(--deep-rose); }
+    .login-input::placeholder { color: rgba(250,247,242,0.25); }
+
+    .login-btn {
+      width: 100%;
+      background: var(--deep-rose);
+      color: var(--ivory);
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 0.95rem;
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .login-btn:hover { background: var(--charcoal); transform: translateY(-1px); }
+
+    .login-error {
+      font-size: 0.78rem;
+      color: #e07070;
+      margin-top: 0.75rem;
+      text-align: center;
+      display: none;
+    }
+
+    /* ── Dashboard ──────────────────────────────────── */
+    #dashboard { display: none; }
+
+    .top-bar {
+      background: rgba(250,247,242,0.03);
+      border-bottom: 1px solid rgba(250,247,242,0.07);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(20px);
+    }
+
+    .top-bar-logo {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 300;
+    }
+
+    .top-bar-logo span { color: var(--deep-rose); }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .top-bar-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+    }
+
+    .logout-btn {
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+      background: none;
+      border: 1px solid rgba(250,247,242,0.12);
+      border-radius: var(--radius-pill);
+      padding: 0.45rem 1rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover { border-color: var(--deep-rose); color: var(--deep-rose); }
+
+    .dashboard-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: rgba(250,247,242,0.04);
+      border: 1px solid rgba(250,247,242,0.07);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 300;
+      color: var(--ivory);
+      line-height: 1;
+    }
+
+    .stat-value span {
+      font-size: 1rem;
+      color: var(--deep-rose);
+      font-family: var(--font-body);
+      font-weight: 300;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .controls-title {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 300;
+      flex: 1;
+    }
+
+    .controls-title em { font-style: italic; color: var(--deep-rose); }
+
+    .filter-btn {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-family: var(--font-body);
+      background: none;
+      border: 1px solid rgba(250,247,242,0.12);
+      border-radius: var(--radius-pill);
+      padding: 0.4rem 1rem;
+      color: var(--mid-gray);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      border-color: var(--deep-rose);
+      color: var(--ivory);
+      background: rgba(176,122,117,0.15);
+    }
+
+    .search-input {
+      background: rgba(250,247,242,0.05);
+      border: 1px solid rgba(250,247,242,0.1);
+      border-radius: var(--radius-pill);
+      padding: 0.4rem 1rem;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      color: var(--ivory);
+      outline: none;
+      width: 180px;
+      transition: border-color 0.2s;
+    }
+
+    .search-input::placeholder { color: rgba(250,247,242,0.25); }
+    .search-input:focus { border-color: var(--deep-rose); }
+
+    .clear-btn {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: var(--font-body);
+      background: rgba(224,112,112,0.15);
+      border: 1px solid rgba(224,112,112,0.3);
+      border-radius: var(--radius-pill);
+      padding: 0.4rem 1rem;
+      color: #e07070;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-btn:hover { background: rgba(224,112,112,0.25); }
+
+    /* Bookings table */
+    .bookings-wrap {
+      background: rgba(250,247,242,0.03);
+      border: 1px solid rgba(250,247,242,0.07);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .bookings-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .bookings-table th {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+      font-weight: 400;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(250,247,242,0.06);
+      white-space: nowrap;
+    }
+
+    .bookings-table td {
+      padding: 1rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 300;
+      border-bottom: 1px solid rgba(250,247,242,0.04);
+      vertical-align: middle;
+    }
+
+    .bookings-table tr:last-child td { border-bottom: none; }
+
+    .bookings-table tbody tr {
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .bookings-table tbody tr:hover {
+      background: rgba(250,247,242,0.03);
+    }
+
+    .client-name {
+      font-weight: 400;
+      color: var(--ivory);
+    }
+
+    .client-meta {
+      font-size: 0.72rem;
+      color: var(--mid-gray);
+      margin-top: 0.15rem;
+    }
+
+    .booking-id {
+      font-size: 0.75rem;
+      font-family: monospace;
+      color: var(--deep-rose);
+      letter-spacing: 0.05em;
+    }
+
+    .service-pill {
+      display: inline-block;
+      background: rgba(232,197,191,0.12);
+      border: 1px solid rgba(232,197,191,0.2);
+      border-radius: var(--radius-pill);
+      padding: 0.2rem 0.7rem;
+      font-size: 0.72rem;
+      color: var(--dusty-pink);
+      white-space: nowrap;
+    }
+
+    .date-cell { white-space: nowrap; }
+
+    .time-cell {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: var(--ivory);
+    }
+
+    .price-cell {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--ivory);
+      white-space: nowrap;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .status-badge.pending {
+      color: #d4a84b;
+      border-color: rgba(212,168,75,0.3);
+      background: rgba(212,168,75,0.08);
+    }
+
+    .status-badge.confirmed {
+      color: #7abf8e;
+      border-color: rgba(122,191,142,0.3);
+      background: rgba(122,191,142,0.08);
+    }
+
+    .status-badge.done {
+      color: var(--mid-gray);
+      border-color: rgba(142,134,128,0.3);
+      background: rgba(142,134,128,0.08);
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .action-btn {
+      background: none;
+      border: 1px solid rgba(250,247,242,0.1);
+      border-radius: var(--radius-sm);
+      padding: 0.3rem 0.6rem;
+      font-size: 0.7rem;
+      font-family: var(--font-body);
+      color: var(--mid-gray);
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-left: 0.25rem;
+    }
+
+    .action-btn:hover { border-color: var(--deep-rose); color: var(--deep-rose); }
+    .action-btn.danger:hover { border-color: #e07070; color: #e07070; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .empty-state-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    .empty-state-text {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--mid-gray);
+    }
+
+    /* Detail modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,22,20,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #231f1d;
+      border: 1px solid rgba(250,247,242,0.1);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 480px;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: none;
+      border: none;
+      color: var(--mid-gray);
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.25rem;
+      transition: color 0.15s;
+    }
+
+    .modal-close:hover { color: var(--ivory); }
+
+    .modal-booking-id {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--deep-rose);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-name {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-field-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+      margin-bottom: 0.25rem;
+    }
+
+    .modal-field-value {
+      font-size: 0.9rem;
+      color: var(--ivory);
+      font-weight: 300;
+    }
+
+    .modal-divider {
+      border: none;
+      border-top: 1px solid rgba(250,247,242,0.07);
+      margin: 1.25rem 0;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid;
+      min-width: 100px;
+    }
+
+    .modal-btn.confirm {
+      background: rgba(122,191,142,0.15);
+      border-color: rgba(122,191,142,0.4);
+      color: #7abf8e;
+    }
+
+    .modal-btn.confirm:hover { background: rgba(122,191,142,0.25); }
+
+    .modal-btn.done {
+      background: rgba(142,134,128,0.15);
+      border-color: rgba(142,134,128,0.3);
+      color: var(--mid-gray);
+    }
+
+    .modal-btn.done:hover { background: rgba(142,134,128,0.25); }
+
+    .modal-btn.delete {
+      background: rgba(224,112,112,0.1);
+      border-color: rgba(224,112,112,0.3);
+      color: #e07070;
+    }
+
+    .modal-btn.delete:hover { background: rgba(224,112,112,0.2); }
+
+    /* Today highlight */
+    .today-badge {
+      font-size: 0.6rem;
+      background: rgba(176,122,117,0.2);
+      border: 1px solid rgba(176,122,117,0.4);
+      color: var(--deep-rose);
+      border-radius: var(--radius-pill);
+      padding: 0.1rem 0.5rem;
+      margin-left: 0.5rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      vertical-align: middle;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .top-bar { padding: 1rem; }
+      .dashboard-inner { padding: 1.5rem 1rem; }
+
+      .bookings-table th:nth-child(4),
+      .bookings-table td:nth-child(4),
+      .bookings-table th:nth-child(6),
+      .bookings-table td:nth-child(6) { display: none; }
+
+      .controls { gap: 0.75rem; }
+      .controls-title { width: 100%; flex: none; }
+      .modal-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-row { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+      .stat-value { font-size: 1.8rem; }
+
+      .bookings-table th:nth-child(5),
+      .bookings-table td:nth-child(5) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Login ─────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Lash'd by <span>Karen</span></div>
+    <div class="login-subtitle">Admin Dashboard</div>
+
+    <label class="login-label" for="admin-password">Password</label>
+    <input type="password" class="login-input" id="admin-password" placeholder="Enter admin password" autocomplete="current-password">
+
+    <button class="login-btn" id="login-btn">Enter Dashboard</button>
+    <div class="login-error" id="login-error">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- ── Dashboard ──────────────────────────────── -->
+<div id="dashboard">
+  <div class="top-bar">
+    <div class="top-bar-logo">Lash'd by <span>Karen</span></div>
+    <div class="top-bar-right">
+      <span class="top-bar-label">Admin</span>
+      <button class="logout-btn" id="logout-btn">Log out</button>
+    </div>
+  </div>
+
+  <div class="dashboard-inner">
+
+    <!-- Stats -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Bookings</div>
+        <div class="stat-value" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Today</div>
+        <div class="stat-value" id="stat-today">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="stat-pending">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Revenue</div>
+        <div class="stat-value" id="stat-revenue">0</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="controls-title">All <em>Bookings</em></div>
+      <input type="text" class="search-input" id="search-input" placeholder="Search name, room…">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="pending">Pending</button>
+      <button class="filter-btn" data-filter="confirmed">Confirmed</button>
+      <button class="filter-btn" data-filter="done">Done</button>
+      <button class="clear-btn" id="clear-all-btn">Clear All</button>
+    </div>
+
+    <!-- Table -->
+    <div class="bookings-wrap">
+      <table class="bookings-table" id="bookings-table">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Service</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Location</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="bookings-body">
+        </tbody>
+      </table>
+      <div class="empty-state" id="empty-state" style="display:none">
+        <div class="empty-state-icon">✦</div>
+        <div class="empty-state-text">No bookings found</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Detail Modal ───────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="modal-booking-id" id="modal-booking-id"></div>
+    <div class="modal-name" id="modal-name"></div>
+
+    <div class="modal-grid" id="modal-grid"></div>
+
+    <hr class="modal-divider">
+
+    <div class="modal-actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PASSWORD = 'karen2025';
+  const STORAGE_KEY    = 'lash_bookings';
+
+  /* ── Auth ─────────────────────────────────── */
+  const loginScreen = document.getElementById('login-screen');
+  const dashboard   = document.getElementById('dashboard');
+  const loginBtn    = document.getElementById('login-btn');
+  const loginError  = document.getElementById('login-error');
+  const passwordInput = document.getElementById('admin-password');
+
+  const login = () => {
+    if (passwordInput.value === ADMIN_PASSWORD) {
+      loginScreen.style.display = 'none';
+      dashboard.style.display = 'block';
+      loginError.style.display = 'none';
+      loadDashboard();
+    } else {
+      loginError.style.display = 'block';
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
+  };
+
+  loginBtn.addEventListener('click', login);
+  passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    dashboard.style.display = 'none';
+    loginScreen.style.display = 'flex';
+    passwordInput.value = '';
+  });
+
+  /* ── Data ─────────────────────────────────── */
+  const getBookings = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+  const saveBookings = (bookings) => localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+
+  const todayStr = () => new Date().toISOString().split('T')[0];
+
+  const formatDate = (d) => {
+    if (!d) return '—';
+    const date = new Date(d + 'T12:00:00');
+    return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
+
+  /* ── State ────────────────────────────────── */
+  let currentFilter = 'all';
+  let currentSearch = '';
+  let currentBookingId = null;
+
+  /* ── Render ───────────────────────────────── */
+  const loadDashboard = () => {
+    renderStats();
+    renderTable();
+  };
+
+  const renderStats = () => {
+    const all = getBookings();
+    const today = todayStr();
+    const totalRevenue = all.reduce((s, b) => s + (b.price || 0), 0);
+
+    document.getElementById('stat-total').textContent = all.length;
+    document.getElementById('stat-today').textContent = all.filter(b => b.date === today).length;
+    document.getElementById('stat-pending').textContent = all.filter(b => b.status === 'pending').length;
+    document.getElementById('stat-revenue').innerHTML = `₦${totalRevenue.toLocaleString()}`;
+  };
+
+  const renderTable = () => {
+    const all = getBookings();
+    const today = todayStr();
+
+    const filtered = all
+      .filter(b => currentFilter === 'all' || b.status === currentFilter)
+      .filter(b => {
+        if (!currentSearch) return true;
+        const q = currentSearch.toLowerCase();
+        return (b.client_name || '').toLowerCase().includes(q)
+          || (b.room || '').toLowerCase().includes(q)
+          || (b.hostel || '').toLowerCase().includes(q)
+          || (b.service || '').toLowerCase().includes(q)
+          || (b.id || '').toLowerCase().includes(q);
+      })
+      .sort((a, b) => {
+        // Sort by date then time
+        if (a.date !== b.date) return a.date > b.date ? 1 : -1;
+        return (a.time || '') > (b.time || '') ? 1 : -1;
+      });
+
+    const tbody = document.getElementById('bookings-body');
+    const empty = document.getElementById('empty-state');
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+
+    empty.style.display = 'none';
+    tbody.innerHTML = filtered.map(b => {
+      const isToday = b.date === today;
+      const statusClass = b.status || 'pending';
+      const statusLabel = { pending: 'Pending', confirmed: 'Confirmed', done: 'Done' }[statusClass] || 'Pending';
+
+      return `
+        <tr data-id="${b.id}" onclick="openModal('${b.id}')">
+          <td>
+            <div class="client-name">${esc(b.client_name || '—')}</div>
+            <div class="client-meta">${esc(b.phone || '')}</div>
+          </td>
+          <td><span class="service-pill">${esc(b.service || '—')}</span></td>
+          <td class="date-cell">
+            ${formatDate(b.date)}
+            ${isToday ? '<span class="today-badge">Today</span>' : ''}
+          </td>
+          <td class="time-cell">${esc(b.time || '—')}</td>
+          <td>
+            <div class="client-name" style="font-weight:300">${esc(b.hostel || '—')}</div>
+            <div class="client-meta">Room ${esc(b.room || '—')}</div>
+          </td>
+          <td class="price-cell">₦${(b.price || 0).toLocaleString()}</td>
+          <td>
+            <span class="status-badge ${statusClass}">
+              <span class="status-dot"></span>${statusLabel}
+            </span>
+          </td>
+          <td onclick="event.stopPropagation()">
+            <button class="action-btn danger" onclick="deleteBooking('${b.id}')">✕</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  };
+
+  /* ── Modal ────────────────────────────────── */
+  const openModal = (id) => {
+    const bookings = getBookings();
+    const b = bookings.find(x => x.id === id);
+    if (!b) return;
+    currentBookingId = id;
+
+    document.getElementById('modal-booking-id').textContent = b.id;
+    document.getElementById('modal-name').textContent = b.client_name || '—';
+
+    const fields = [
+      { label: 'Phone',    value: b.phone || '—' },
+      { label: 'Service',  value: b.service || '—' },
+      { label: 'Date',     value: formatDate(b.date) },
+      { label: 'Time',     value: b.time || '—' },
+      { label: 'Hostel',   value: b.hostel || '—' },
+      { label: 'Room',     value: b.room || '—' },
+      { label: 'Add-ons',  value: b.addons || 'None' },
+      { label: 'Total',    value: `₦${(b.price || 0).toLocaleString()}` },
+      { label: 'Notes',    value: b.notes || 'None' },
+      { label: 'Booked at', value: b.created_at ? new Date(b.created_at).toLocaleString('en-GB', { dateStyle:'medium', timeStyle:'short' }) : '—' },
+    ];
+
+    document.getElementById('modal-grid').innerHTML = fields.map(f => `
+      <div>
+        <div class="modal-field-label">${f.label}</div>
+        <div class="modal-field-value">${esc(String(f.value))}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('modal-actions').innerHTML = `
+      <button class="modal-btn confirm" onclick="updateStatus('${id}', 'confirmed')">✓ Confirm</button>
+      <button class="modal-btn done"    onclick="updateStatus('${id}', 'done')">Mark Done</button>
+      <button class="modal-btn delete"  onclick="deleteBooking('${id}', true)">Delete</button>
+    `;
+
+    document.getElementById('modal-overlay').classList.add('open');
+  };
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  });
+
+  const closeModal = () => {
+    document.getElementById('modal-overlay').classList.remove('open');
+    currentBookingId = null;
+  };
+
+  /* ── Actions ──────────────────────────────── */
+  const updateStatus = (id, status) => {
+    const bookings = getBookings();
+    const b = bookings.find(x => x.id === id);
+    if (b) b.status = status;
+    saveBookings(bookings);
+    closeModal();
+    loadDashboard();
+  };
+
+  const deleteBooking = (id, fromModal = false) => {
+    if (!confirm('Delete this booking? This cannot be undone.')) return;
+    const bookings = getBookings().filter(b => b.id !== id);
+    saveBookings(bookings);
+    if (fromModal) closeModal();
+    loadDashboard();
+  };
+
+  document.getElementById('clear-all-btn').addEventListener('click', () => {
+    if (!confirm('Delete ALL bookings? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    loadDashboard();
+  });
+
+  /* ── Filters & Search ─────────────────────── */
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderTable();
+    });
+  });
+
+  document.getElementById('search-input').addEventListener('input', e => {
+    currentSearch = e.target.value.trim();
+    renderTable();
+  });
+
+  /* ── Utils ────────────────────────────────── */
+  const esc = (str) => {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(String(str)));
+    return d.innerHTML;
+  };
+
+  // Expose globally for inline onclick
+  window.openModal = openModal;
+  window.updateStatus = updateStatus;
+  window.deleteBooking = deleteBooking;
+</script>
+</body>
+</html>
