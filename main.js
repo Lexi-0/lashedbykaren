@@ -90,11 +90,11 @@ const Booking = (() => {
 
   // ── Main services (pick one) ──────────────────────────────
   const SERVICES = [
-    { id: 's1', name: 'Classic Full Set',  price: 3000, duration: '1.5h', description: 'Natural, wispy look' },
-    { id: 's2', name: 'Hybrid Set',        price: 4000, duration: '2h',   description: 'Classic + Volume mix' },
-    { id: 's3', name: 'Volume Set',        price: 5000, duration: '2.5h', description: 'Fluffy, dramatic fans' },
-    { id: 's4', name: 'Mega Volume',       price: 6000, duration: '3h',   description: 'Ultra-glam, full lash' },
-    { id: 's5', name: 'Lash Removal',      price: 1500, duration: '30m',  description: 'Safe, gentle removal' },
+    { id: 's1', name: 'Classic Full Set',  price: 3000, description: 'Natural, wispy look' },
+    { id: 's2', name: 'Hybrid Set',        price: 4000, description: 'Classic + Volume mix' },
+    { id: 's3', name: 'Volume Set',        price: 5000, description: 'Fluffy, dramatic fans' },
+    { id: 's4', name: 'Mega Volume',       price: 6000, description: 'Ultra-glam, full lash' },
+    { id: 's5', name: 'Lash Removal',      price: 1500, description: 'Safe, gentle removal' },
   ];
 
   // ── Add-ons (pick any, shown after main service selected) ─
