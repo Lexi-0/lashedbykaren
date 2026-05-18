@@ -187,8 +187,9 @@ const Booking = (() => {
         // Reset add-ons when main service changes
         state.addons = [];
         $$('.addon-checkbox').forEach(cb => cb.checked = false);
-        // Show add-ons and total
-        $('#addons-section').style.display = 'block';
+        // Hide add-ons for Lash Removal, show for everything else
+        const isRemoval = state.service.name === 'Lash Removal';
+        $('#addons-section').style.display = isRemoval ? 'none' : 'block';
         $('#booking-total').style.display = 'flex';
         updateTotal();
       });
