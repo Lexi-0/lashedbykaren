@@ -408,11 +408,11 @@ const Booking = (() => {
     return 'LS-' + Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
   };
 
+  const SUPABASE_URL = 'https://xtoaumatscoozoairhxh.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b2F1bWF0c2Nvb3pvYWlyaHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5OTUzMTEsImV4cCI6MjA5NDU3MTMxMX0.jsGUHQX07rE56yZAeYNsweCnj9_pY5-TXnee74Jgx2g';
+
   const saveBooking = async (data) => {
-    // In production: POST to Supabase via backend/api.js
-    // For demo, we just simulate with localStorage + timeout
-    const bookings = JSON.parse(localStorage.getItem('lash_bookings') || '[]');
-    bookings.push({
+    const payload = {
       id: data.bookingNumber,
       client_name: data.name,
       phone: data.phone,
@@ -426,8 +426,23 @@ const Booking = (() => {
       notes: data.notes,
       status: 'pending',
       created_at: new Date().toISOString()
+    };
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
     });
-    localStorage.setItem('lash_bookings', JSON.stringify(bookings));
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error('Booking failed: ' + err);
+    }
     return new Promise(r => setTimeout(r, 800));
   };
 
