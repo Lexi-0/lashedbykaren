@@ -367,6 +367,25 @@ const Booking = (() => {
     // Save to backend
     await saveBooking(state);
 
+    // Send email notification (fire and forget — don't block ticket)
+    fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bookingId: state.bookingNumber,
+        name:      state.name,
+        phone:     state.phone,
+        hostel:    state.hostel,
+        room:      state.room,
+        service:   state.service?.name,
+        addons:    (state.addons || []).map(a => a.name).join(', ') || null,
+        price:     (state.service?.price || 0) + (state.addons || []).reduce((s,a) => s + a.price, 0),
+        date:      state.date,
+        time:      state.time,
+        notes:     state.notes || null,
+      })
+    }).catch(err => console.warn('Notification failed:', err));
+
     // Show ticket
     Ticket.show(state);
 
