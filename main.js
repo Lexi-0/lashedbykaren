@@ -5,6 +5,10 @@
 
 'use strict';
 
+/* ─── Supabase Config ─────────────────────────────────────── */
+const SUPABASE_URL = 'https://xtoaumatscoozoairhxh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b2F1bWF0c2Nvb3pvYWlyaHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5OTUzMTEsImV4cCI6MjA5NDU3MTMxMX0.jsGUHQX07rE56yZAeYNsweCnj9_pY5-TXnee74Jgx2g';
+
 /* ─── Helpers ─────────────────────────────────────────────── */
 const $ = (sel, ctx = document) => ctx.querySelector(sel);
 const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
@@ -90,17 +94,17 @@ const Booking = (() => {
 
   // ── Main services (pick one) ──────────────────────────────
   const SERVICES = [
-    { id: 's1', name: 'Classic Full Set',  price: 3000, duration: "",   description: 'Natural, wispy look' },
-    { id: 's2', name: 'Hybrid Set',        price: 4000, duration: "",   description: 'Classic + Volume mix' },
-    { id: 's3', name: 'Volume Set',        price: 5000, duration: "",   description: 'Fluffy, dramatic fans' },
-    { id: 's4', name: 'Mega Volume',       price: 6000, duration: "",   description: 'Ultra-glam, full lash' },
-    { id: 's5', name: 'Lash Removal',      price: 1500, duration: "",   description: 'Safe, gentle removal' },
+    { id: 's1', name: 'Classic Full Set',  price: 3000, duration: '1.5h', description: 'Natural, wispy look' },
+    { id: 's2', name: 'Hybrid Set',        price: 4000, duration: '2h',   description: 'Classic + Volume mix' },
+    { id: 's3', name: 'Volume Set',        price: 5000, duration: '2.5h', description: 'Fluffy, dramatic fans' },
+    { id: 's4', name: 'Mega Volume',       price: 6000, duration: '3h',   description: 'Ultra-glam, full lash' },
+    { id: 's5', name: 'Lash Removal',      price: 1500, duration: '30m',  description: 'Safe, gentle removal' },
   ];
 
   // ── Add-ons (pick any, shown after main service selected) ─
   const ADDONS = [
     { id: 'a1', name: 'Longer/Dramatic Lashes', price: 500,  description: 'Extra length & intensity' },
-    { id: 'a2', name: 'Spikes for each eye',                 price: 1000, description: 'Edgy pointed fans' },
+    { id: 'a2', name: 'Spikes',                 price: 1000, description: 'Edgy pointed fans' },
     { id: 'a3', name: 'Bottom Lash',            price: 3000, description: 'Full bottom lash application' },
   ];
 
@@ -470,9 +474,6 @@ const Booking = (() => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     return 'LS-' + Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
   };
-
-  const SUPABASE_URL = 'https://xtoaumatscoozoairhxh.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b2F1bWF0c2Nvb3pvYWlyaHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5OTUzMTEsImV4cCI6MjA5NDU3MTMxMX0.jsGUHQX07rE56yZAeYNsweCnj9_pY5-TXnee74Jgx2g';
 
   const saveBooking = async (data) => {
     const payload = {
@@ -851,9 +852,49 @@ document.addEventListener('DOMContentLoaded', () => {
   ServiceCards.init();
 
   if ($('.booking-form-wrap')) {
-    Booking.init();
-    Ticket.init();
+    // Check whether bookings are open before initialising the form
+    (async () => {
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/settings?select=value&key=eq.bookings_open&limit=1`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+            }
+          }
+        );
+        const rows = await res.json();
+        const isOpen = !rows.length || rows[0].value === 'true' || rows[0].value === true;
+
+        if (isOpen) {
+          Booking.init();
+          Ticket.init();
+        } else {
+          showBookingsClosed();
+        }
+      } catch {
+        // If the check fails, default to showing the form
+        Booking.init();
+        Ticket.init();
+      }
+    })();
   }
 
   // Marquee is pure CSS — no JS needed
 });
+
+function showBookingsClosed() {
+  const wrap = $('.booking-form-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = `
+    <div class="bookings-closed-msg">
+      <div class="bookings-closed-icon">✦</div>
+      <h3 class="bookings-closed-title">We're not taking bookings right now</h3>
+      <p class="bookings-closed-text">
+        We're currently fully booked or taking a short break.<br>
+        Check back soon — we'd love to lash you up.
+      </p>
+    </div>
+  `;
+}
