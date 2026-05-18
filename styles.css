@@ -766,6 +766,43 @@ ul { list-style: none; }
   box-sizing: border-box;
 }
 
+/* ── Bookings closed state ──────────────────────────────── */
+.bookings-closed-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 5rem 2rem;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  width: 100%;
+}
+
+.bookings-closed-icon {
+  font-size: 2rem;
+  color: var(--deep-rose);
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.bookings-closed-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 300;
+  color: var(--charcoal);
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.bookings-closed-text {
+  font-size: 0.95rem;
+  color: var(--mid-gray);
+  line-height: 1.8;
+  max-width: 400px;
+}
+
 .booking-sidebar {
   background: var(--charcoal);
   padding: clamp(2rem, 5vw, 4rem);
