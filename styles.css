@@ -1248,6 +1248,22 @@ ul { list-style: none; }
   text-decoration: line-through;
 }
 
+.time-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mid-gray);
+  padding: 1.5rem 0;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
 .form-actions {
   display: flex;
   gap: 1rem;
