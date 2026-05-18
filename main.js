@@ -100,7 +100,8 @@ const Booking = (() => {
   // ── Add-ons (pick any, shown after main service selected) ─
   const ADDONS = [
     { id: 'a1', name: 'Longer/Dramatic Lashes', price: 500,  description: 'Extra length & intensity' },
-    { id: 'a2', name: 'Spikes',                 price: 1000, description: 'Edgy pointed fans' },
+    { id: 'a2', name: 'Spikes for each eye',                 price: 1000, description: 'Edgy pointed fans' },
+    { id: 'a3', name: 'Bottom Lash',            price: 3000, description: 'Full bottom lash application' },
   ];
 
   const TIME_SLOTS = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'];
