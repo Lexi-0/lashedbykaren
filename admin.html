@@ -730,6 +730,15 @@
   const ADMIN_PASSWORD = 'karen2025';
   const SUPABASE_URL   = 'https://xtoaumatscoozoairhxh.supabase.co';
   const SUPABASE_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0b2F1bWF0c2Nvb3pvYWlyaHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5OTUzMTEsImV4cCI6MjA5NDU3MTMxMX0.jsGUHQX07rE56yZAeYNsweCnj9_pY5-TXnee74Jgx2g';
+  const SESSION_KEY    = 'admin_session';
+  const SESSION_TTL    = 5 * 60 * 1000;
+
+  /* ── Utils ─────────────────────────────────── */
+  const esc = (str) => {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(String(str)));
+    return d.innerHTML;
+  };
 
   const sbHeaders = () => ({
     'apikey': SUPABASE_KEY,
@@ -737,67 +746,22 @@
     'Content-Type': 'application/json'
   });
 
-  /* ── Auth ─────────────────────────────────── */
-  const loginScreen = document.getElementById('login-screen');
-  const dashboard   = document.getElementById('dashboard');
-  const loginBtn    = document.getElementById('login-btn');
-  const loginError  = document.getElementById('login-error');
-  const passwordInput = document.getElementById('admin-password');
+  const todayStr = () => new Date().toISOString().split('T')[0];
 
-  const SESSION_KEY = 'admin_session';
-  const SESSION_TTL = 5 * 60 * 1000; // 5 minutes
-
-  const showDashboard = () => {
-    loginScreen.style.display = 'none';
-    dashboard.style.display = 'block';
-    loginError.style.display = 'none';
-    loadDashboard();
+  const formatDate = (d) => {
+    if (!d) return '—';
+    const date = new Date(d + 'T12:00:00');
+    return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
-  // Check existing session on page load
-  const existingSession = sessionStorage.getItem(SESSION_KEY);
-  if (existingSession) {
-    const { timestamp } = JSON.parse(existingSession);
-    if (Date.now() - timestamp < SESSION_TTL) {
-      showDashboard();
-    } else {
-      sessionStorage.removeItem(SESSION_KEY);
-    }
-  }
-
-  const login = () => {
-    if (passwordInput.value === ADMIN_PASSWORD) {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ timestamp: Date.now() }));
-      showDashboard();
-    } else {
-      loginError.style.display = 'block';
-      passwordInput.value = '';
-      passwordInput.focus();
-    }
-  };
-
-  loginBtn.addEventListener('click', login);
-  passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-
-  document.getElementById('logout-btn').addEventListener('click', () => {
-    sessionStorage.removeItem(SESSION_KEY);
-    dashboard.style.display = 'none';
-    loginScreen.style.display = 'flex';
-    passwordInput.value = '';
-  });
-
-  /* ── Data ─────────────────────────────────── */
+  /* ── Supabase ──────────────────────────────── */
   const getBookings = async () => {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?select=*&order=date.asc,time.asc`, {
-        headers: {
-          ...sbHeaders(),
-          'Prefer': 'return=representation'
-        }
+        headers: sbHeaders()
       });
       if (!res.ok) {
-        const err = await res.text();
-        console.error('Supabase fetch error:', res.status, err);
+        console.error('Supabase error:', res.status, await res.text());
         return [];
       }
       const data = await res.json();
@@ -830,42 +794,14 @@
     });
   };
 
-  const todayStr = () => new Date().toISOString().split('T')[0];
-
-  const formatDate = (d) => {
-    if (!d) return '—';
-    const date = new Date(d + 'T12:00:00');
-    return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-  };
-
-  /* ── State ────────────────────────────────── */
+  /* ── State ─────────────────────────────────── */
   let currentFilter = 'all';
   let currentSearch = '';
-  let currentBookingId = null;
 
-  /* ── Render ───────────────────────────────── */
-  const loadDashboard = async () => {
-    document.getElementById('bookings-body').innerHTML = `
-      <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--mid-gray);font-size:0.85rem;letter-spacing:0.1em">
-        Loading…
-      </td></tr>`;
-    document.getElementById('empty-state').style.display = 'none';
-
-    let all = [];
-    try {
-      all = await getBookings();
-    } catch(e) {
-      console.error('loadDashboard error:', e);
-    }
-    console.log('Bookings fetched:', all.length, all);
-    renderStats(all);
-    renderTable(all);
-  };
-
+  /* ── Render ────────────────────────────────── */
   const renderStats = (all) => {
     const today = todayStr();
     const totalRevenue = all.reduce((s, b) => s + (b.price || 0), 0);
-
     document.getElementById('stat-total').textContent = all.length;
     document.getElementById('stat-today').textContent = all.filter(b => b.date === today).length;
     document.getElementById('stat-pending').textContent = all.filter(b => b.status === 'pending').length;
@@ -874,6 +810,8 @@
 
   const renderTable = (all) => {
     const today = todayStr();
+    const tbody = document.getElementById('bookings-body');
+    const empty = document.getElementById('empty-state');
 
     const filtered = all
       .filter(b => currentFilter === 'all' || b.status === currentFilter)
@@ -887,12 +825,9 @@
           || (b.id || '').toLowerCase().includes(q);
       })
       .sort((a, b) => {
-        if (a.date !== b.date) return (a.date || '') > (b.date || '') ? 1 : -1;
+        if ((a.date || '') !== (b.date || '')) return (a.date || '') > (b.date || '') ? 1 : -1;
         return (a.time || '') > (b.time || '') ? 1 : -1;
       });
-
-    const tbody = document.getElementById('bookings-body');
-    const empty = document.getElementById('empty-state');
 
     if (filtered.length === 0) {
       tbody.innerHTML = '';
@@ -905,7 +840,6 @@
       const isToday = b.date === today;
       const statusClass = b.status || 'pending';
       const statusLabel = { pending: 'Pending', confirmed: 'Confirmed', done: 'Done' }[statusClass] || 'Pending';
-
       return `
         <tr data-id="${b.id}" onclick="openModal('${b.id}')">
           <td>
@@ -931,31 +865,42 @@
           <td onclick="event.stopPropagation()">
             <button class="action-btn danger" onclick="deleteBooking('${b.id}')">✕</button>
           </td>
-        </tr>
-      `;
+        </tr>`;
     }).join('');
   };
 
-  /* ── Modal ────────────────────────────────── */
+  const loadDashboard = async () => {
+    const tbody = document.getElementById('bookings-body');
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--mid-gray);font-size:0.85rem;letter-spacing:0.1em">Loading…</td></tr>`;
+    document.getElementById('empty-state').style.display = 'none';
+    const all = await getBookings();
+    renderStats(all);
+    renderTable(all);
+  };
+
+  /* ── Modal ─────────────────────────────────── */
+  const closeModal = () => {
+    document.getElementById('modal-overlay').classList.remove('open');
+  };
+
   const openModal = async (id) => {
     const bookings = await getBookings();
     const b = bookings.find(x => x.id === id);
     if (!b) return;
-    currentBookingId = id;
 
     document.getElementById('modal-booking-id').textContent = b.id;
     document.getElementById('modal-name').textContent = b.client_name || '—';
 
     const fields = [
-      { label: 'Phone',    value: b.phone || '—' },
-      { label: 'Service',  value: b.service || '—' },
-      { label: 'Date',     value: formatDate(b.date) },
-      { label: 'Time',     value: b.time || '—' },
-      { label: 'Hostel',   value: b.hostel || '—' },
-      { label: 'Room',     value: b.room || '—' },
-      { label: 'Add-ons',  value: b.addons || 'None' },
-      { label: 'Total',    value: `₦${(b.price || 0).toLocaleString()}` },
-      { label: 'Notes',    value: b.notes || 'None' },
+      { label: 'Phone',     value: b.phone || '—' },
+      { label: 'Service',   value: b.service || '—' },
+      { label: 'Date',      value: formatDate(b.date) },
+      { label: 'Time',      value: b.time || '—' },
+      { label: 'Hostel',    value: b.hostel || '—' },
+      { label: 'Room',      value: b.room || '—' },
+      { label: 'Add-ons',   value: b.addons || 'None' },
+      { label: 'Total',     value: `₦${(b.price || 0).toLocaleString()}` },
+      { label: 'Notes',     value: b.notes || 'None' },
       { label: 'Booked at', value: b.created_at ? new Date(b.created_at).toLocaleString('en-GB', { dateStyle:'medium', timeStyle:'short' }) : '—' },
     ];
 
@@ -963,29 +908,16 @@
       <div>
         <div class="modal-field-label">${f.label}</div>
         <div class="modal-field-value">${esc(String(f.value))}</div>
-      </div>
-    `).join('');
+      </div>`).join('');
 
     document.getElementById('modal-actions').innerHTML = `
       <button class="modal-btn confirm" onclick="updateStatus('${id}', 'confirmed')">✓ Confirm</button>
       <button class="modal-btn done"    onclick="updateStatus('${id}', 'done')">Mark Done</button>
-      <button class="modal-btn delete"  onclick="deleteBooking('${id}', true)">Delete</button>
-    `;
+      <button class="modal-btn delete"  onclick="deleteBooking('${id}', true)">Delete</button>`;
 
     document.getElementById('modal-overlay').classList.add('open');
   };
 
-  document.getElementById('modal-close').addEventListener('click', closeModal);
-  document.getElementById('modal-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('modal-overlay')) closeModal();
-  });
-
-  const closeModal = () => {
-    document.getElementById('modal-overlay').classList.remove('open');
-    currentBookingId = null;
-  };
-
-  /* ── Actions ──────────────────────────────── */
   const updateStatus = async (id, status) => {
     await updateBookingStatus(id, status);
     closeModal();
@@ -999,13 +931,57 @@
     loadDashboard();
   };
 
+  // Expose for inline onclick
+  window.openModal   = openModal;
+  window.updateStatus = updateStatus;
+  window.deleteBooking = deleteBooking;
+
+  /* ── Auth ──────────────────────────────────── */
+  const loginScreen   = document.getElementById('login-screen');
+  const dashboard     = document.getElementById('dashboard');
+  const loginBtn      = document.getElementById('login-btn');
+  const loginError    = document.getElementById('login-error');
+  const passwordInput = document.getElementById('admin-password');
+
+  const showDashboard = () => {
+    loginScreen.style.display = 'none';
+    dashboard.style.display   = 'block';
+    loginError.style.display  = 'none';
+    loadDashboard();
+  };
+
+  const login = () => {
+    if (passwordInput.value === ADMIN_PASSWORD) {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ timestamp: Date.now() }));
+      showDashboard();
+    } else {
+      loginError.style.display = 'block';
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
+  };
+
+  loginBtn.addEventListener('click', login);
+  passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    dashboard.style.display   = 'none';
+    loginScreen.style.display = 'flex';
+    passwordInput.value = '';
+  });
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  });
+
   document.getElementById('clear-all-btn').addEventListener('click', async () => {
     if (!confirm('Delete ALL bookings? This cannot be undone.')) return;
     await removeAllBookings();
     loadDashboard();
   });
 
-  /* ── Filters & Search ─────────────────────── */
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1020,17 +996,20 @@
     loadDashboard();
   });
 
-  /* ── Utils ────────────────────────────────── */
-  const esc = (str) => {
-    const d = document.createElement('div');
-    d.appendChild(document.createTextNode(String(str)));
-    return d.innerHTML;
-  };
-
-  // Expose globally for inline onclick
-  window.openModal = openModal;
-  window.updateStatus = updateStatus;
-  window.deleteBooking = deleteBooking;
+  /* ── Init: check session ───────────────────── */
+  const existingSession = sessionStorage.getItem(SESSION_KEY);
+  if (existingSession) {
+    try {
+      const { timestamp } = JSON.parse(existingSession);
+      if (Date.now() - timestamp < SESSION_TTL) {
+        showDashboard();
+      } else {
+        sessionStorage.removeItem(SESSION_KEY);
+      }
+    } catch(e) {
+      sessionStorage.removeItem(SESSION_KEY);
+    }
+  }
 </script>
 </body>
 </html>
