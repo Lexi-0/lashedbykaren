@@ -104,7 +104,7 @@ Admin dashboard at `yourproject.vercel.app/admin.html`
 Protected by a password. Default is  — change it at the top of `admin.html`:
 
 ```js
-const ADMIN_PASSWORD = 'karen2025';
+const ADMIN_PASSWORD = '';
 ```
 
 Features:
@@ -127,5 +127,5 @@ Services are defined in `main.js` near the top. Find the `SERVICES` array and ed
 Open `admin.html` and change this line:
 
 ```js
-const ADMIN_PASSWORD = 'karen2025';
+const ADMIN_PASSWORD = '';
 ```
