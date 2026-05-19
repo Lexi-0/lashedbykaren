@@ -280,6 +280,8 @@ ul { list-style: none; }
   border-radius: var(--radius-pill);
   transition: all var(--transition-smooth);
   white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .btn-dark {
