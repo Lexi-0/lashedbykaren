@@ -3,7 +3,7 @@
    Design System: Soft Luxury / Editorial Beauty
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap');
+/* Fonts loaded non-blocking via <link> in HTML — no @import needed */
 
 /* ─── CSS Variables ───────────────────────────────────────── */
 :root {
@@ -698,6 +698,8 @@ ul { list-style: none; }
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-bottom: 1rem;
+  contain: layout style;
+  -webkit-overflow-scrolling: touch;
 }
 
 .testimonials-track::-webkit-scrollbar {
@@ -1811,6 +1813,8 @@ ul { list-style: none; }
   display: flex;
   width: max-content;
   animation: marquee 20s linear infinite;
+  will-change: transform;
+  contain: layout style;
 }
 
 .marquee-item {
@@ -1881,11 +1885,13 @@ ul { list-style: none; }
   opacity: 0;
   transform: translateY(32px);
   transition: opacity 0.7s ease, transform 0.7s ease;
+  will-change: opacity, transform;
 }
 
 .reveal.in-view {
   opacity: 1;
   transform: translateY(0);
+  will-change: auto; /* release after animation completes */
 }
 
 .reveal-delay-1 { transition-delay: 0.1s; }
