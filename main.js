@@ -826,15 +826,24 @@ const ServiceCards = (() => {
       if (!src) return;
 
       const img = document.createElement('img');
-      img.src = src;
-      img.alt = '';
+      img.alt         = '';
+      img.loading     = 'lazy';   // browser-native lazy load
+      img.decoding    = 'async';  // decode off main thread
 
-      img.onload = () => {
-        el.style.background = 'none';
-        const placeholder = el.querySelector('.service-card-image-placeholder');
-        if (placeholder) placeholder.remove();
-      };
+      // Use IntersectionObserver to only set src when card is near the viewport
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          img.src = src;
+          img.onload = () => {
+            el.style.background = 'none';
+            el.querySelector('.service-card-image-placeholder')?.remove();
+          };
+          obs.unobserve(el);
+        });
+      }, { rootMargin: '200px' }); // start loading 200px before it scrolls into view
 
+      observer.observe(el);
       el.appendChild(img);
     });
   };
@@ -854,6 +863,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if ($('.booking-form-wrap')) {
     // Check whether bookings are open before initialising the form
     (async () => {
+      let isOpen = true; // safe default
       try {
         const res = await fetch(
           `${SUPABASE_URL}/rest/v1/settings?select=value&key=eq.bookings_open&limit=1`,
@@ -864,19 +874,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         );
-        const rows = await res.json();
-        const isOpen = !rows.length || rows[0].value === 'true' || rows[0].value === true;
 
-        if (isOpen) {
-          Booking.init();
-          Ticket.init();
-        } else {
-          showBookingsClosed();
+        if (res.ok) {
+          const rows = await res.json();
+          if (Array.isArray(rows) && rows.length > 0) {
+            // Row exists — use its value explicitly
+            isOpen = rows[0].value === 'true';
+          }
+          // If rows is empty (no row yet), isOpen stays true (default open)
         }
+        // If res not ok (table missing etc.), isOpen stays true
       } catch {
-        // If the check fails, default to showing the form
+        // Network failure — default to open so we never accidentally lock people out
+      }
+
+      if (isOpen) {
         Booking.init();
         Ticket.init();
+      } else {
+        showBookingsClosed();
       }
     })();
   }
