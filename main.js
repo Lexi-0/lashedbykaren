@@ -718,13 +718,15 @@ const Ticket = (() => {
       if (e.target === overlay) hide();
     });
 
-    // Close button → show thank you
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('.ticket-close-btn')) {
-        hide();
-        ThankYou.show(_lastBooking);
-      }
-      if (e.target.closest('.ticket-download-btn')) downloadTicket();
+    // Download button
+    document.querySelector('.ticket-download-btn')?.addEventListener('click', downloadTicket);
+
+    // Close button — directly on the element, not delegated
+    document.querySelector('.ticket-close-btn')?.addEventListener('click', () => {
+      const booking = _lastBooking;
+      hide();
+      // Small delay so ticket fade-out completes before thank you appears
+      setTimeout(() => ThankYou.show(booking), 200);
     });
   };
 
@@ -909,6 +911,9 @@ document.addEventListener('DOMContentLoaded', () => {
   ServiceCards.init();
 
   if ($('.booking-form-wrap')) {
+    // ThankYou always initialised — it needs to be ready before any click
+    ThankYou.init();
+
     // Check whether bookings are open before initialising the form
     (async () => {
       let isOpen = true; // safe default
@@ -926,20 +931,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (res.ok) {
           const rows = await res.json();
           if (Array.isArray(rows) && rows.length > 0) {
-            // Row exists — use its value explicitly
             isOpen = rows[0].value === 'true';
           }
-          // If rows is empty (no row yet), isOpen stays true (default open)
         }
-        // If res not ok (table missing etc.), isOpen stays true
       } catch {
-        // Network failure — default to open so we never accidentally lock people out
+        // Network failure — default to open
       }
 
       if (isOpen) {
         Booking.init();
         Ticket.init();
-        ThankYou.init();
       } else {
         showBookingsClosed();
       }
