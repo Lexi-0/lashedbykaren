@@ -321,8 +321,19 @@ const Booking = (() => {
     $('#booking-submit')?.addEventListener('click', submitBooking);
 
     // Tap anywhere on the date row to open the picker
-    // Date input is positioned over the trigger and directly tappable —
-    // no showPicker() needed; native picker opens on tap across all mobile browsers
+    // On desktop (no touch) the input is opacity:0 so clicks don't reach it naturally —
+    // use showPicker() triggered from the visible trigger div.
+    // On mobile the input is directly tappable so no JS needed there.
+    const dateTrigger = $('#date-picker-trigger');
+    const dateInput   = $('#booking-date');
+    if (dateTrigger && dateInput) {
+      const isTouch = () => window.matchMedia('(hover: none)').matches;
+      dateTrigger.addEventListener('click', () => {
+        if (!isTouch()) {
+          try { dateInput.showPicker(); } catch { dateInput.focus(); }
+        }
+      });
+    }
 
     // Date change — update display text, state, and reload real availability
     $('#booking-date')?.addEventListener('change', async e => {
@@ -718,15 +729,18 @@ const Ticket = (() => {
       if (e.target === overlay) hide();
     });
 
-    // Download button
-    document.querySelector('.ticket-download-btn')?.addEventListener('click', downloadTicket);
-
-    // Close button — directly on the element, not delegated
-    document.querySelector('.ticket-close-btn')?.addEventListener('click', () => {
-      const booking = _lastBooking;
-      hide();
-      // Small delay so ticket fade-out completes before thank you appears
-      setTimeout(() => ThankYou.show(booking), 200);
+    // Use delegation on document — buttons are rendered dynamically inside renderTicket()
+    // so they don't exist at init time and can't be queried directly
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.ticket-download-btn')) {
+        downloadTicket();
+        return;
+      }
+      if (e.target.closest('.ticket-close-btn')) {
+        const booking = _lastBooking;
+        hide();
+        setTimeout(() => ThankYou.show(booking), 200);
+      }
     });
   };
 
