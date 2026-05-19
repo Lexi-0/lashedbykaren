@@ -321,17 +321,8 @@ const Booking = (() => {
     $('#booking-submit')?.addEventListener('click', submitBooking);
 
     // Tap anywhere on the date row to open the picker
-    const dateTrigger = $('#date-picker-trigger');
-    const dateInput   = $('#booking-date');
-    if (dateTrigger && dateInput) {
-      dateTrigger.addEventListener('click', () => {
-        try {
-          dateInput.showPicker(); // modern browsers + all mobile
-        } catch {
-          dateInput.focus();      // fallback for older browsers
-        }
-      });
-    }
+    // Date input is positioned over the trigger and directly tappable —
+    // no showPicker() needed; native picker opens on tap across all mobile browsers
 
     // Date change — update display text, state, and reload real availability
     $('#booking-date')?.addEventListener('change', async e => {
