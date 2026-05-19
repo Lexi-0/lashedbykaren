@@ -647,28 +647,136 @@
       vertical-align: middle;
     }
 
-    /* Responsive */
+    /* ═══════════════════════════════════════════
+       RESPONSIVE — TABLET (768px)
+       ═══════════════════════════════════════════ */
     @media (max-width: 768px) {
       .stats-row { grid-template-columns: 1fr 1fr; }
-      .top-bar { padding: 1rem; }
-      .dashboard-inner { padding: 1.5rem 1rem; }
+      .dashboard-inner { padding: 1.25rem 1rem; }
 
-      .bookings-table th:nth-child(4),
-      .bookings-table td:nth-child(4),
+      /* Top bar — compress */
+      .top-bar { padding: 0.75rem 1rem; gap: 0.5rem; flex-wrap: wrap; }
+      .top-bar-logo { font-size: 1.1rem; }
+      .top-bar-label { display: none; }
+      .top-bar-right { gap: 0.5rem; }
+      .bookings-toggle { padding: 0.4rem 0.75rem 0.4rem 0.6rem; font-size: 0.62rem; }
+      .logout-btn { padding: 0.4rem 0.75rem; font-size: 0.62rem; }
+
+      /* Hide less-important table columns */
+      .bookings-table th:nth-child(5),
+      .bookings-table td:nth-child(5),
       .bookings-table th:nth-child(6),
       .bookings-table td:nth-child(6) { display: none; }
 
-      .controls { gap: 0.75rem; }
-      .controls-title { width: 100%; flex: none; }
-      .modal-grid { grid-template-columns: 1fr; }
+      /* Controls wrap nicely */
+      .controls { gap: 0.6rem; }
+      .controls-title { width: 100%; flex: none; font-size: 1.3rem; }
+      .search-input { width: 100%; flex: 1; }
+
+      /* Modal full width */
+      .modal { padding: 1.5rem; }
+      .modal-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+      .modal-name { font-size: 1.6rem; }
     }
 
+    /* ═══════════════════════════════════════════
+       RESPONSIVE — MOBILE (480px)
+       Full card-based layout — no table
+       ═══════════════════════════════════════════ */
     @media (max-width: 480px) {
-      .stats-row { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-      .stat-value { font-size: 1.8rem; }
+      .stats-row { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+      .stat-card { padding: 1rem; }
+      .stat-value { font-size: 1.6rem; }
+      .stat-label { font-size: 0.6rem; }
 
-      .bookings-table th:nth-child(5),
-      .bookings-table td:nth-child(5) { display: none; }
+      /* Search full width */
+      .search-input { width: 100%; }
+
+      /* Filter buttons — scroll horizontally as a row */
+      .controls {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .controls::-webkit-scrollbar { display: none; }
+      .controls-title { flex: 0 0 100%; order: -1; }
+      .search-input { flex: 0 0 100%; order: 0; }
+      .filter-btn, .clear-btn { flex-shrink: 0; }
+
+      /* Hide the table entirely on small mobile */
+      .bookings-table { display: none; }
+
+      /* Show card list instead */
+      .booking-cards { display: flex !important; flex-direction: column; gap: 0.75rem; padding: 0.75rem; }
+
+      /* Modal tweaks */
+      .modal-overlay { padding: 0; align-items: flex-end; }
+      .modal {
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        max-width: 100%;
+        padding: 1.5rem 1.25rem 2rem;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .modal-actions { flex-direction: column; }
+      .modal-btn { flex: none; width: 100%; }
+    }
+    /* ── Booking Cards (mobile only, shown instead of table) ── */
+    .booking-cards {
+      display: none; /* shown via media query */
+    }
+
+    .booking-card {
+      background: rgba(250,247,242,0.04);
+      border: 1px solid rgba(250,247,242,0.08);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .booking-card:active { background: rgba(250,247,242,0.07); }
+
+    .booking-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .booking-card-name {
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--ivory);
+      line-height: 1.2;
+    }
+
+    .booking-card-meta {
+      font-size: 0.72rem;
+      color: var(--mid-gray);
+      margin-top: 0.15rem;
+    }
+
+    .booking-card-bottom {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .booking-card-datetime {
+      font-size: 0.78rem;
+      color: var(--mid-gray);
+      flex: 1;
+    }
+
+    .booking-card-price {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: var(--ivory);
     }
   </style>
 </head>
@@ -735,7 +843,7 @@
       <button class="clear-btn" id="clear-all-btn">Clear All</button>
     </div>
 
-    <!-- Table -->
+    <!-- Table (tablet+) -->
     <div class="bookings-wrap">
       <table class="bookings-table" id="bookings-table">
         <thead>
@@ -758,6 +866,9 @@
         <div class="empty-state-text">No bookings found</div>
       </div>
     </div>
+
+    <!-- Cards (mobile) -->
+    <div class="booking-cards" id="booking-cards"></div>
 
   </div>
 </div>
@@ -863,6 +974,7 @@
     const today = todayStr();
     const tbody = document.getElementById('bookings-body');
     const empty = document.getElementById('empty-state');
+    const cards = document.getElementById('booking-cards');
 
     const filtered = all
       .filter(b => currentFilter === 'all' || b.status === currentFilter)
@@ -882,11 +994,14 @@
 
     if (filtered.length === 0) {
       tbody.innerHTML = '';
+      if (cards) cards.innerHTML = '';
       empty.style.display = 'block';
       return;
     }
 
     empty.style.display = 'none';
+
+    // ── Table rows (tablet+) ──────────────────────────────────
     tbody.innerHTML = filtered.map(b => {
       const isToday = b.date === today;
       const statusClass = b.status || 'pending';
@@ -918,6 +1033,33 @@
           </td>
         </tr>`;
     }).join('');
+
+    // ── Mobile cards ──────────────────────────────────────────
+    if (cards) {
+      cards.innerHTML = filtered.map(b => {
+        const isToday = b.date === today;
+        const statusClass = b.status || 'pending';
+        const statusLabel = { pending: 'Pending', confirmed: 'Confirmed', done: 'Done' }[statusClass] || 'Pending';
+        return `
+          <div class="booking-card" onclick="openModal('${b.id}')">
+            <div class="booking-card-top">
+              <div>
+                <div class="booking-card-name">${esc(b.client_name || '—')}</div>
+                <div class="booking-card-meta">${esc(b.service || '—')} · Room ${esc(b.room || '—')}, ${esc(b.hostel || '—')}</div>
+              </div>
+              <span class="status-badge ${statusClass}">
+                <span class="status-dot"></span>${statusLabel}
+              </span>
+            </div>
+            <div class="booking-card-bottom">
+              <div class="booking-card-datetime">
+                ${formatDate(b.date)}${isToday ? ' <span class="today-badge">Today</span>' : ''} · ${esc(b.time || '—')}
+              </div>
+              <div class="booking-card-price">₦${(b.price || 0).toLocaleString()}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
   };
 
   const loadDashboard = async () => {
