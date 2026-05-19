@@ -1334,6 +1334,125 @@ ul { list-style: none; }
   animation: fadeIn 0.3s ease forwards;
 }
 
+/* ── Thank You Overlay ──────────────────────── */
+.thankyou-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 22, 20, 0.92);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.thankyou-overlay.open {
+  display: flex;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.thankyou-card {
+  background: var(--warm-white);
+  border-radius: var(--radius-lg);
+  padding: clamp(2rem, 6vw, 3.5rem);
+  width: min(480px, 100%);
+  text-align: center;
+  animation: ticketDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.thankyou-icon {
+  font-size: 2rem;
+  color: var(--deep-rose);
+  margin-bottom: 1.25rem;
+  display: block;
+}
+
+.thankyou-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  font-weight: 300;
+  color: var(--charcoal);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.thankyou-title em {
+  font-style: italic;
+  color: var(--deep-rose);
+}
+
+.thankyou-msg {
+  font-size: 0.9rem;
+  color: var(--mid-gray);
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  font-weight: 300;
+}
+
+.thankyou-detail {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  font-size: 0.82rem;
+  color: var(--charcoal);
+  line-height: 1.9;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.thankyou-detail strong {
+  color: var(--deep-rose);
+  font-weight: 400;
+}
+
+.thankyou-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.thankyou-book-btn {
+  background: var(--deep-rose);
+  color: var(--ivory);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.95rem 2rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  width: 100%;
+}
+
+.thankyou-book-btn:hover {
+  background: var(--charcoal);
+  transform: translateY(-1px);
+}
+
+.thankyou-close-btn {
+  background: none;
+  border: 1px solid rgba(44,40,38,0.15);
+  border-radius: var(--radius-pill);
+  padding: 0.85rem 2rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mid-gray);
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.thankyou-close-btn:hover {
+  border-color: var(--charcoal);
+  color: var(--charcoal);
+}
+
 .ticket-container {
   width: min(460px, 100%);
   margin: auto;
