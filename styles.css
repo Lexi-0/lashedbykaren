@@ -1241,16 +1241,18 @@ ul { list-style: none; }
   transform: rotate(180deg);
 }
 
-/* Hide the native input but keep it accessible */
+/* Native date input sits over the trigger — tapping it directly opens the picker on all mobile browsers */
 .date-input-hidden {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   opacity: 0;
-  pointer-events: none;
   border: none;
   padding: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  color-scheme: light;
 }
 
 .time-grid {
