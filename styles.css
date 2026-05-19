@@ -1598,8 +1598,9 @@ ul { list-style: none; }
 /* ─── Policies Section ────────────────────────────────────── */
 .policies-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: 1.5rem;
+  overflow: hidden;
 }
 
 .policy-card {
@@ -1607,6 +1608,7 @@ ul { list-style: none; }
   border-radius: var(--radius-lg);
   padding: 2rem;
   box-shadow: var(--shadow-soft);
+  min-width: 0;
 }
 
 .policy-icon {
@@ -1632,9 +1634,10 @@ ul { list-style: none; }
 /* ─── Contact Section ─────────────────────────────────────── */
 .contact-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 4rem;
   align-items: start;
+  max-width: 600px;
 }
 
 .contact-info-item {
@@ -1955,11 +1958,6 @@ ul { list-style: none; }
 
   .footer-grid > :first-child {
     grid-column: 1 / -1;
-  }
-
-  .contact-grid {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
   }
 
   .gallery-grid {
