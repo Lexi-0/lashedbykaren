@@ -85,7 +85,7 @@ const ScrollReveal = (() => {
 
 /* ─── Booking Engine ──────────────────────────────────────── */
 const Booking = (() => {
-  /* ── ✏️  EDIT PRICES & SERVICES HERE ──────────────────────
+  /* ──  EDIT PRICES & SERVICES HERE ──────────────────────
      To change a price, update the `price` value below.
      To change the currency symbol, update CURRENCY.
      Prices are numbers only (no symbols) — symbol is added automatically.
@@ -94,11 +94,12 @@ const Booking = (() => {
 
   // ── Main services (pick one) ──────────────────────────────
   const SERVICES = [
-    { id: 's1', name: 'Classic Full Set',  price: 3000, duration: '1.5h', description: 'Natural, wispy look' },
-    { id: 's2', name: 'Hybrid Set',        price: 4000, duration: '2h',   description: 'Classic + Volume mix' },
-    { id: 's3', name: 'Volume Set',        price: 5000, duration: '2.5h', description: 'Fluffy, dramatic fans' },
-    { id: 's4', name: 'Mega Volume',       price: 6000, duration: '3h',   description: 'Ultra-glam, full lash' },
-    { id: 's5', name: 'Lash Removal',      price: 1500, duration: '30m',  description: 'Safe, gentle removal' },
+      { id: 's1', name: 'Strip Lashes',  price: 2000, duration: '', description: 'Lightweight and beautiful' },   
+     { id: 's1', name: 'Classic Full Set',  price: 3000, duration: '', description: 'Natural, wispy look' },
+    { id: 's2', name: 'Hybrid Set',        price: 4000, duration: '',   description: 'Classic + Volume mix' },
+    { id: 's3', name: 'Volume Set',        price: 5000, duration: '', description: 'Fluffy, dramatic fans' },
+    { id: 's4', name: 'Mega Volume',       price: 6000, duration: '',   description: 'Ultra-glam, full lash' },
+    { id: 's5', name: 'Lash Removal',      price: 1500, duration: '',  description: 'Safe, gentle removal' },
   ];
 
   // ── Add-ons (pick any, shown after main service selected) ─
@@ -542,7 +543,7 @@ const Ticket = (() => {
 
     ticket.innerHTML = `
       <div class="ticket-header">
-        <div class="ticket-studio">Lash Studio</div>
+        <div class="ticket-studio">Lash'dbyK</div>
         <div class="ticket-title">Appointment<br><em style="font-style:italic;color:var(--dusty-pink)">${b.service?.name || 'Lash Service'}</em></div>
         <div class="ticket-subtitle">Your appointment is confirmed</div>
       </div>
@@ -634,7 +635,7 @@ const Ticket = (() => {
     const modules = size / moduleSize;
 
     // Data to encode
-    const data = `LASHSTUDIO|${b.bookingNumber}|${b.name}|${b.date}|${b.time}`;
+    const data = `LASH'DBYK|${b.bookingNumber}|${b.name}|${b.date}|${b.time}`;
     const seed = hashCode(data);
 
     ctx.fillStyle = '#1A1614';
