@@ -508,9 +508,11 @@ const Booking = (() => {
 /* ─── Ticket System ───────────────────────────────────────── */
 const Ticket = (() => {
   const overlay = $('.ticket-overlay');
+  let _lastBooking = null;
 
   const show = (booking) => {
     if (!overlay) return;
+    _lastBooking = booking;
     renderTicket(booking);
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -713,13 +715,64 @@ const Ticket = (() => {
   const init = () => {
     // Close on overlay click
     overlay?.addEventListener('click', (e) => {
-      if (e.target === overlay) hide();
+      if (e.target === overlay) { hide(); ThankYou.show(_lastBooking); }
     });
 
     // Close and download buttons
     document.addEventListener('click', (e) => {
-      if (e.target.closest('.ticket-close-btn')) hide();
+      if (e.target.closest('.ticket-close-btn')) { hide(); ThankYou.show(_lastBooking); }
       if (e.target.closest('.ticket-download-btn')) downloadTicket();
+    });
+  };
+
+  return { init, show, hide };
+})();
+
+/* ─── Thank You State ─────────────────────────────────────── */
+const ThankYou = (() => {
+  const overlay  = document.getElementById('thankyou-overlay');
+  const nameEl   = document.getElementById('thankyou-name');
+  const detailEl = document.getElementById('thankyou-detail');
+
+  const show = (b) => {
+    if (!overlay || !b) return;
+
+    if (nameEl) nameEl.textContent = b.name || 'gorgeous';
+
+    if (detailEl) {
+      const dateFormatted = b.date
+        ? new Date(b.date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })
+        : '—';
+      const total = (b.service?.price || 0) + (b.addons || []).reduce((s, a) => s + a.price, 0);
+      detailEl.innerHTML = `
+        <strong>Service</strong> ${escHtml(b.service?.name || '—')}<br>
+        <strong>Date</strong> ${dateFormatted}<br>
+        <strong>Time</strong> ${escHtml(b.time || '—')}<br>
+        <strong>Location</strong> Room ${escHtml(b.room || '—')}, ${escHtml(b.hostel || '—')}<br>
+        <strong>Total</strong> ₦${total.toLocaleString()}
+      `;
+    }
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const hide = () => {
+    overlay?.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  const init = () => {
+    document.getElementById('thankyou-close')?.addEventListener('click', hide);
+
+    document.getElementById('thankyou-book-again')?.addEventListener('click', () => {
+      hide();
+      // Scroll back to the booking section smoothly
+      document.getElementById('book')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    overlay?.addEventListener('click', (e) => {
+      if (e.target === overlay) hide();
     });
   };
 
@@ -883,6 +936,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isOpen) {
         Booking.init();
         Ticket.init();
+        ThankYou.init();
       } else {
         showBookingsClosed();
       }
