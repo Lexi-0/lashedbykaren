@@ -713,14 +713,17 @@ const Ticket = (() => {
   };
 
   const init = () => {
-    // Close on overlay click
+    // Tapping the backdrop just closes — no thank you
     overlay?.addEventListener('click', (e) => {
-      if (e.target === overlay) { hide(); ThankYou.show(_lastBooking); }
+      if (e.target === overlay) hide();
     });
 
-    // Close and download buttons
+    // Close button → show thank you
     document.addEventListener('click', (e) => {
-      if (e.target.closest('.ticket-close-btn')) { hide(); ThankYou.show(_lastBooking); }
+      if (e.target.closest('.ticket-close-btn')) {
+        hide();
+        ThankYou.show(_lastBooking);
+      }
       if (e.target.closest('.ticket-download-btn')) downloadTicket();
     });
   };
