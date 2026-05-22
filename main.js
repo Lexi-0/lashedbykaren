@@ -105,7 +105,7 @@ const Booking = (() => {
   // ── Add-ons (pick any, shown after main service selected) ─
   const ADDONS = [
     { id: 'a1', name: 'Longer/Dramatic Lashes', price: 500,  description: 'Extra length & intensity' },
-    { id: 'a2', name: 'Spikes',                 price: 1000, description: 'Edgy pointed fans' },
+    { id: 'a2', name: 'Spikes for each eye',                 price: 1000, description: 'Edgy pointed fans' },
     { id: 'a3', name: 'Bottom Lash',            price: 3000, description: 'Full bottom lash application' },
   ];
 
