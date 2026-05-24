@@ -128,7 +128,47 @@
       text-align: center;
       display: none;
     }
+#hours-days-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+}
 
+.hours-day { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.hours-day-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--mid-gray);
+}
+
+.hours-slots-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.hour-slot {
+  background: rgba(250,247,242,0.04);
+  border: 1px solid rgba(250,247,242,0.08);
+  border-radius: var(--radius-pill);
+  padding: 0.35rem 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--mid-gray);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hour-slot:hover { border-color: rgba(250,247,242,0.2); color: var(--ivory); }
+
+.hour-slot.active {
+  background: rgba(176,122,117,0.2);
+  border-color: rgba(176,122,117,0.5);
+  color: var(--deep-rose);
+}
     /* ── Dashboard ──────────────────────────────────── */
     #dashboard { display: none; }
 
@@ -778,6 +818,184 @@
       font-size: 1rem;
       color: var(--ivory);
     }
+
+    /* ── Set Hours Button ── */
+    .set-hours-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(176,122,117,0.12);
+      border: 1px solid rgba(176,122,117,0.35);
+      border-radius: var(--radius-pill);
+      padding: 0.6rem 1.2rem;
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--deep-rose);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1.25rem;
+    }
+    .set-hours-btn:hover { background: rgba(176,122,117,0.22); }
+
+    /* ── Hours Bottom Sheet ── */
+    .hours-sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,22,20,0.75);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .hours-sheet-overlay.open { display: flex; }
+
+    .hours-sheet {
+      background: #1e1a18;
+      border: 1px solid rgba(250,247,242,0.08);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      width: 100%;
+      max-width: 600px;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 1.5rem 1.25rem 2.5rem;
+      animation: sheetUp 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+
+    @keyframes sheetUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .hours-sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .hours-sheet-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--ivory);
+    }
+
+    .hours-sheet-close {
+      background: none;
+      border: none;
+      color: var(--mid-gray);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .hours-sheet-close:hover { color: var(--ivory); }
+
+    .hours-day-tabs {
+      display: flex;
+      gap: 0.35rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .hours-day-tabs::-webkit-scrollbar { display: none; }
+
+    .hours-day-tab {
+      flex-shrink: 0;
+      background: rgba(250,247,242,0.04);
+      border: 1px solid rgba(250,247,242,0.08);
+      border-radius: var(--radius-pill);
+      padding: 0.45rem 1rem;
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .hours-day-tab:hover { color: var(--ivory); border-color: rgba(250,247,242,0.2); }
+    .hours-day-tab.active { background: rgba(176,122,117,0.18); border-color: rgba(176,122,117,0.5); color: var(--deep-rose); }
+    .hours-day-tab.has-hours { border-color: rgba(176,122,117,0.3); }
+    .hours-day-tab.has-hours::after { content: ' ●'; font-size: 0.45rem; vertical-align: middle; color: var(--deep-rose); }
+
+    .hours-slots-wrap {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .hour-slot {
+      background: rgba(250,247,242,0.04);
+      border: 1px solid rgba(250,247,242,0.08);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 0.5rem;
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      color: var(--mid-gray);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      width: 100%;
+    }
+    .hour-slot:hover { border-color: rgba(250,247,242,0.2); color: var(--ivory); }
+    .hour-slot.active { background: rgba(176,122,117,0.18); border-color: rgba(176,122,117,0.5); color: var(--deep-rose); }
+
+    .hours-sheet-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .hours-save-btn {
+      flex: 1;
+      background: var(--deep-rose);
+      color: var(--ivory);
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 0.8rem 1.5rem;
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .hours-save-btn:hover { background: #8f5f5a; }
+    .hours-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .hours-clear-day-btn {
+      background: none;
+      border: 1px solid rgba(224,112,112,0.3);
+      border-radius: var(--radius-pill);
+      padding: 0.75rem 1.25rem;
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #e07070;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .hours-clear-day-btn:hover { background: rgba(224,112,112,0.1); }
+
+    .hours-saved-msg {
+      font-size: 0.75rem;
+      color: #7ecfa0;
+      opacity: 0;
+      transition: opacity 0.3s;
+      width: 100%;
+      text-align: center;
+    }
+    .hours-saved-msg.show { opacity: 1; }
   </style>
 </head>
 <body>
@@ -831,6 +1049,8 @@
         <div class="stat-value" id="stat-revenue">0</div>
       </div>
     </div>
+    <!-- Set Hours Button -->
+    <button class="set-hours-btn" id="set-hours-btn">✦ Set My Available Hours</button>
 
     <!-- Controls -->
     <div class="controls">
@@ -873,6 +1093,23 @@
   </div>
 </div>
 
+<!-- ── Available Hours Sheet ── -->
+<div class="hours-sheet-overlay" id="hours-sheet-overlay">
+  <div class="hours-sheet">
+    <div class="hours-sheet-header">
+      <div class="hours-sheet-title">My Available Hours</div>
+      <button class="hours-sheet-close" id="hours-sheet-close">✕</button>
+    </div>
+    <div class="hours-day-tabs" id="hours-day-tabs"></div>
+    <div class="hours-slots-wrap" id="hours-slots-wrap"></div>
+    <div class="hours-sheet-footer">
+      <button class="hours-save-btn" id="hours-save-btn">Save Hours</button>
+      <button class="hours-clear-day-btn" id="hours-clear-day-btn">Clear Day</button>
+      <div class="hours-saved-msg" id="hours-saved-msg">Hours saved ✓</div>
+    </div>
+  </div>
+</div>
+
 <!-- ── Detail Modal ───────────────────────────── -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
@@ -907,6 +1144,22 @@
     'Authorization': `Bearer ${SUPABASE_KEY}`,
     'Content-Type': 'application/json'
   });
+
+  const getSetting = async (key) => {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?select=value&key=eq.${key}&limit=1`, { headers: sbHeaders() });
+      const rows = await res.json();
+      return rows.length ? rows[0].value : null;
+    } catch { return null; }
+  };
+
+  const setSetting = async (key, value) => {
+    await fetch(`${SUPABASE_URL}/rest/v1/settings`, {
+      method: 'POST',
+      headers: { ...sbHeaders(), 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key, value: String(value) })
+    });
+  };
 
   const todayStr = () => new Date().toISOString().split('T')[0];
 
@@ -1153,6 +1406,90 @@
       body: JSON.stringify({ key: 'bookings_open', value: String(open) })
     });
   };
+/* ── Available Hours (bottom sheet) ── */
+  const TIME_SLOTS_ALL = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'];
+  const DAYS_LIST  = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  const DAY_LABELS = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri', saturday:'Sat', sunday:'Sun' };
+
+  let availableHours = {};
+  let activeDay      = 'monday';
+
+  const renderHoursTabs = () => {
+    const wrap = document.getElementById('hours-day-tabs');
+    if (!wrap) return;
+    wrap.innerHTML = DAYS_LIST.map(day => `
+      <button class="hours-day-tab ${day === activeDay ? 'active' : ''} ${(availableHours[day]||[]).length ? 'has-hours' : ''}"
+              data-day="${day}">${DAY_LABELS[day]}</button>
+    `).join('');
+    wrap.querySelectorAll('.hours-day-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeDay = btn.dataset.day;
+        renderHoursTabs();
+        renderHoursSlots();
+      });
+    });
+  };
+
+  const renderHoursSlots = () => {
+    const wrap = document.getElementById('hours-slots-wrap');
+    if (!wrap) return;
+    const active = availableHours[activeDay] || [];
+    wrap.innerHTML = TIME_SLOTS_ALL.map(t => `
+      <button class="hour-slot ${active.includes(t) ? 'active' : ''}" data-time="${t}">${t}</button>
+    `).join('');
+    wrap.querySelectorAll('.hour-slot').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const time    = btn.dataset.time;
+        const current = availableHours[activeDay] || [];
+        if (current.includes(time)) {
+          availableHours[activeDay] = current.filter(x => x !== time);
+        } else {
+          availableHours[activeDay] = [...current, time];
+        }
+        renderHoursTabs();
+        renderHoursSlots();
+      });
+    });
+  };
+
+  const openHoursSheet = () => {
+    document.getElementById('hours-sheet-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderHoursTabs();
+    renderHoursSlots();
+  };
+
+  const closeHoursSheet = () => {
+    document.getElementById('hours-sheet-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  const initAvailableHours = async () => {
+    const val = await getSetting('available_hours');
+    try { availableHours = val ? JSON.parse(val) : {}; } catch { availableHours = {}; }
+
+    document.getElementById('set-hours-btn')?.addEventListener('click', openHoursSheet);
+    document.getElementById('hours-sheet-close')?.addEventListener('click', closeHoursSheet);
+    document.getElementById('hours-sheet-overlay')?.addEventListener('click', e => {
+      if (e.target.id === 'hours-sheet-overlay') closeHoursSheet();
+    });
+
+    document.getElementById('hours-save-btn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('hours-save-btn');
+      const msg = document.getElementById('hours-saved-msg');
+      btn.disabled = true;
+      await setSetting('available_hours', JSON.stringify(availableHours));
+      btn.disabled = false;
+      msg.classList.add('show');
+      setTimeout(() => msg.classList.remove('show'), 2000);
+    });
+
+    document.getElementById('hours-clear-day-btn')?.addEventListener('click', () => {
+      availableHours[activeDay] = [];
+      renderHoursTabs();
+      renderHoursSlots();
+    });
+  };
 
   const applyToggleUI = (open) => {
     toggleBtn.classList.toggle('open',   open);
@@ -1185,13 +1522,14 @@
   const loginError    = document.getElementById('login-error');
   const passwordInput = document.getElementById('admin-password');
 
-  const showDashboard = () => {
-    loginScreen.style.display = 'none';
-    dashboard.style.display   = 'block';
-    loginError.style.display  = 'none';
-    loadDashboard();
-    loadToggleState();
-  };
+ const showDashboard = () => {
+  loginScreen.style.display = 'none';
+  dashboard.style.display   = 'block';
+  loginError.style.display  = 'none';
+  loadDashboard();
+  loadToggleState();
+  initAvailableHours();
+ };
 
   const login = () => {
     if (passwordInput.value === ADMIN_PASSWORD) {
