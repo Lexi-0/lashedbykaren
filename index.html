@@ -413,8 +413,27 @@
 
           <div class="form-group">
             <label class="form-label" for="client-hostel">Hostel</label>
-            <input type="text" class="form-input" id="client-hostel" name="hostel" placeholder="e.g. Paetos, Veritas" autocomplete="off">
+            <select class="form-input" id="client-hostel" name="hostel">
+              <option value="">Select your hostel…</option>
+              <option value="Paetos" data-room="true">Paetos</option>
+              <option value="CICL" data-room="true">CICL</option>
+              <option value="Old Kelson" data-room="true">Old Kelson</option>
+              <option value="A" data-room="true">A</option>
+              <option value="B" data-room="true">B</option>
+              <option value="C" data-room="true">C</option>
+              <option value="G" data-room="true">G</option>
+              <option value="H" data-room="true">H</option>
+              <option value="New Kelson" data-room="false">New Kelson</option>
+            </select>
             <div class="form-error" id="hostel-error"></div>
+          </div>
+
+          <div class="form-group" id="room-service-row" style="display:none">
+            <label class="addon-check-label">
+              <input type="checkbox" id="room-service-check">
+              <span>Room Service <span style="color:var(--deep-rose)">+₦500</span></span>
+            </label>
+            <p class="form-hint">We come directly to your room</p>
           </div>
 
           <div class="form-group">
