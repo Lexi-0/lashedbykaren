@@ -110,6 +110,14 @@ const Booking = (() => {
 
   const TIME_SLOTS = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'];
 
+
+  const HOSTELS = [
+  { name: 'Maison Fahrenheit', hasRoomService: true },
+  { name: 'BON Hotel',         hasRoomService: true },
+  { name: 'Transcorp Hilton',  hasRoomService: true },
+  { name: 'Other / Home',      hasRoomService: false },
+];
+
   let state = {
     step: 1,
     service: null,
@@ -239,30 +247,44 @@ const Booking = (() => {
     const rows = await res.json();
     return rows.map(r => r.time);
   };
+const fetchAvailableSlots = async (date) => {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/settings?select=value&key=eq.available_hours&limit=1`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    if (!res.ok) return TIME_SLOTS;
+    const rows = await res.json();
+    if (!rows.length || !rows[0].value) return TIME_SLOTS;
+    const hours = JSON.parse(rows[0].value);
+    const day = new Date(date + 'T12:00:00')
+      .toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    return hours[day] && hours[day].length ? hours[day] : TIME_SLOTS;
+  } catch { return TIME_SLOTS; }
+};
+  const renderTimeSlots = (bookedTimes = [], availableTimes = TIME_SLOTS) => {
+  const grid = $('.time-grid');
+  if (!grid) return;
 
-  const renderTimeSlots = (bookedTimes = []) => {
-    const grid = $('.time-grid');
-    if (!grid) return;
+  if (!availableTimes.length) {
+    grid.innerHTML = `<p class="time-loading">No available slots for this day.</p>`;
+    return;
+  }
 
-    grid.innerHTML = TIME_SLOTS.map(t => {
-      const isBooked = bookedTimes.includes(t);
-      return `
-        <button class="time-btn ${isBooked ? 'booked' : ''}"
-                data-time="${t}"
-                ${isBooked ? 'disabled' : ''}>
-          ${t}
-        </button>
-      `;
-    }).join('');
+  grid.innerHTML = availableTimes.map(t => {
+    const isBooked = bookedTimes.includes(t);
+    return `<button class="time-btn ${isBooked ? 'booked' : ''}"
+                    data-time="${t}" ${isBooked ? 'disabled' : ''}>${t}</button>`;
+  }).join('');
 
-    $$('.time-btn:not(.booked)').forEach(btn => {
-      btn.addEventListener('click', () => {
-        $$('.time-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        state.time = btn.dataset.time;
-      });
+  $$('.time-btn:not(.booked)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.time-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.time = btn.dataset.time;
     });
-  };
+  });
+};
 
   // Show loading spinner in the time grid while fetching
   const showTimeSlotsLoading = () => {
@@ -272,17 +294,19 @@ const Booking = (() => {
 
   // Load slots for the currently selected date (called on step 2 entry and date change)
   const loadTimeSlotsForDate = async (date) => {
-    if (!date) { renderTimeSlots([]); return; }
-    showTimeSlotsLoading();
-    const booked = await fetchBookedSlots(date);
-    renderTimeSlots(booked);
-    // Re-apply selected state if user came back to step 2
-    if (state.time) {
-      const activeBtn = $(`.time-btn[data-time="${state.time}"]`);
-      if (activeBtn && !activeBtn.disabled) activeBtn.classList.add('selected');
-      else state.time = null; // slot was taken since they last picked it
-    }
-  };
+  if (!date) { renderTimeSlots([]); return; }
+  showTimeSlotsLoading();
+  const [bookedTimes, availableTimes] = await Promise.all([
+    fetchBookedSlots(date),
+    fetchAvailableSlots(date),
+  ]);
+  renderTimeSlots(bookedTimes, availableTimes);
+  if (state.time) {
+    const activeBtn = $(`.time-btn[data-time="${state.time}"]`);
+    if (activeBtn && !activeBtn.disabled) activeBtn.classList.add('selected');
+    else state.time = null;
+  }
+};
 
   const attachEvents = () => {
     // Step 1 → 2
@@ -315,6 +339,14 @@ const Booking = (() => {
 
     // Step 3 back
     $('#step3-back')?.addEventListener('click', () => goToStep(2));
+    // Show room service option when hostel supports it
+    $('#client-hostel')?.addEventListener('change', (e) => {
+        const opt = e.target.options[e.target.selectedIndex];
+        const hasRoom = opt.dataset.room === 'true';
+        const row = $('#room-service-row');
+        if (row) row.style.display = hasRoom ? 'block' : 'none';
+        if (!hasRoom && $('#room-service-check')) $('#room-service-check').checked = false;
+      });
 
     // Submit
     $('#booking-submit')?.addEventListener('click', submitBooking);
@@ -390,13 +422,14 @@ const Booking = (() => {
     // Validate step 3
     const name      = $('#client-name')?.value.trim();
     const phone     = $('#client-phone')?.value.trim();
-    const hostel    = $('#client-hostel')?.value.trim();
+    const hostelEl  = $('#client-hostel');
+    const hostel    = hostelEl?.value.trim();
     const room      = $('#client-room')?.value.trim();
     const notes     = $('#client-notes')?.value.trim();
 
     if (!name) { showError('name-error', 'Please enter your name.'); return; }
     if (!phone || phone.length < 7) { showError('phone-error', 'Please enter a valid phone number.'); return; }
-    if (!hostel) { showError('hostel-error', 'Please enter your hostel.'); return; }
+    if (!hostel) { showError('hostel-error', 'Please select your hostel.'); return; }
     if (!room) { showError('room-error', 'Please enter your room number.'); return; }
 
     state.name = name;
@@ -404,6 +437,7 @@ const Booking = (() => {
     state.hostel = hostel;
     state.room = room;
     state.notes = notes;
+    state.roomService = $('#room-service-check')?.checked || false;
     state.bookingNumber = generateBookingNumber();
 
     // Show loading state
@@ -428,7 +462,7 @@ const Booking = (() => {
         room:      state.room,
         service:   state.service?.name,
         addons:    (state.addons || []).map(a => a.name).join(', ') || null,
-        price:     (state.service?.price || 0) + (state.addons || []).reduce((s,a) => s + a.price, 0),
+        price:     (state.service?.price || 0) + (state.addons || []).reduce((s,a) => s + a.price, 0) + (state.roomService ? 500 : 0),
         date:      state.date,
         time:      state.time,
         notes:     state.notes || null,
@@ -468,6 +502,8 @@ const Booking = (() => {
     if ($('#client-name')) $('#client-name').value = '';
     if ($('#client-phone')) $('#client-phone').value = '';
     if ($('#client-hostel')) $('#client-hostel').value = '';
+    if ($('#room-service-row')) $('#room-service-row').style.display = 'none';
+    if ($('#room-service-check')) $('#room-service-check').checked = false;
     if ($('#client-room')) $('#client-room').value = '';
     if ($('#client-notes')) $('#client-notes').value = '';
   };
@@ -486,7 +522,7 @@ const Booking = (() => {
       room: data.room,
       service: data.service?.name,
       addons: (data.addons || []).map(a => a.name).join(', '),
-      price: (data.service?.price || 0) + (data.addons || []).reduce((s,a)=>s+a.price,0),
+      price: (data.service?.price || 0) + (data.addons || []).reduce((s,a)=>s+a.price,0) + (data.roomService ? 500 : 0),
       date: data.date,
       time: data.time,
       notes: data.notes,
